@@ -48,10 +48,22 @@ class BetaFeedback(models.Model):
     )
     message = models.TextField()
     page_url = models.CharField(max_length=500, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_beta_feedback',
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
+
+    @property
+    def is_reviewed(self):
+        return self.reviewed_at is not None
 
     def __str__(self):
         return f'Beta feedback from {self.user.username}'

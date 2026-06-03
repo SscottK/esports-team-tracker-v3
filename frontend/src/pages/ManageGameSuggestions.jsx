@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
+import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
 import { useAuth } from '../context/AuthContext';
+import { useNav } from '../context/NavContext';
+import * as adminApi from '../api/admin';
 import * as gamesApi from '../api/games';
 
 export default function ManageGameSuggestions() {
   const { user } = useAuth();
+  const { refreshNav } = useNav();
   const [suggestions, setSuggestions] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
@@ -20,8 +25,12 @@ export default function ManageGameSuggestions() {
     setLoading(true);
     setError('');
     try {
-      const data = await gamesApi.getAdminGameSuggestions(!showReviewed);
+      const [data, counts] = await Promise.all([
+        gamesApi.getAdminGameSuggestions(!showReviewed),
+        adminApi.getAdminPendingCounts(),
+      ]);
       setSuggestions(data);
+      setPendingCount(counts.game_suggestions || 0);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to load game suggestions.');
     } finally {
@@ -42,7 +51,7 @@ export default function ManageGameSuggestions() {
     try {
       await gamesApi.promoteGameSuggestion(suggestionId);
       setSuccess(`"${gameName}" added to the catalog. Add tracks in Django admin or the admin API.`);
-      await load();
+      await Promise.all([load(), refreshNav()]);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to add game to catalog.');
     } finally {
@@ -57,7 +66,7 @@ export default function ManageGameSuggestions() {
     try {
       await gamesApi.dismissGameSuggestion(suggestionId);
       setSuccess('Suggestion dismissed.');
-      await load();
+      await Promise.all([load(), refreshNav()]);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to dismiss suggestion.');
     } finally {
@@ -72,7 +81,7 @@ export default function ManageGameSuggestions() {
     try {
       await gamesApi.deleteGameSuggestion(suggestionId);
       setSuccess('Suggestion deleted.');
-      await load();
+      await Promise.all([load(), refreshNav()]);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to delete suggestion.');
     } finally {
@@ -106,8 +115,11 @@ export default function ManageGameSuggestions() {
           id="show-reviewed-suggestions"
           label="Show reviewed suggestions"
           checked={showReviewed}
-          onChange={(e) => setShowReviewed(e.target.checked)}
+          onChange={(event) => setShowReviewed(event.target.checked)}
         />
+        {!showReviewed && pendingCount > 0 && (
+          <p className="dashboard-panel-meta mt-3 mb-0">{pendingCount} pending suggestion(s)</p>
+        )}
       </section>
 
       {loading ? (

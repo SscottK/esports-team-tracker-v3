@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.models import PasswordResetRequest, PasswordResetRequestStatus, BetaFeedback
@@ -132,6 +133,46 @@ class BetaFeedbackTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['message'], 'Needs dark mode tweaks.')
+        self.assertFalse(response.data[0]['is_reviewed'])
+
+    def test_staff_can_mark_feedback_reviewed(self):
+        feedback = BetaFeedback.objects.create(
+            user=self.user,
+            message='Grid is confusing.',
+            page_url='Times grid',
+        )
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.patch(f'/api/admin/beta-feedback/{feedback.id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data['is_reviewed'])
+        feedback.refresh_from_db()
+        self.assertEqual(feedback.reviewed_by_id, self.admin.id)
+
+    def test_reviewed_feedback_hidden_from_default_list(self):
+        feedback = BetaFeedback.objects.create(
+            user=self.user,
+            message='Done.',
+            page_url='/dashboard',
+        )
+        feedback.reviewed_by = self.admin
+        feedback.reviewed_at = timezone.now()
+        feedback.save()
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/admin/beta-feedback/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
+        response = self.client.get('/api/admin/beta-feedback/?show_reviewed=true')
+        self.assertEqual(len(response.data), 1)
+
+    def test_staff_pending_counts_include_unreviewed_feedback(self):
+        BetaFeedback.objects.create(user=self.user, message='Help', page_url='/dashboard')
+        PasswordResetRequest.objects.create(user=self.user, username=self.user.username)
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/admin/pending-counts/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['beta_feedback'], 1)
+        self.assertEqual(response.data['password_reset_requests'], 1)
+        self.assertGreaterEqual(response.data['total'], 2)
 
     def test_non_staff_cannot_list_feedback(self):
         self.client.force_authenticate(user=self.user)

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
 import { useAuth } from '../context/AuthContext';
+import { useNav } from '../context/NavContext';
 import * as adminApi from '../api/admin';
 
 function djangoAdminUrl(path) {
@@ -15,24 +16,25 @@ function djangoAdminUrl(path) {
 
 export default function ManagePasswordResetRequests() {
   const { user } = useAuth();
+  const { refreshNav } = useNav();
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [showReviewed, setShowReviewed] = useState(false);
-
-  const pendingCount = useMemo(
-    () => requests.filter((item) => item.status === 'pending').length,
-    [requests],
-  );
+  const [pendingCount, setPendingCount] = useState(0);
 
   const load = async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await adminApi.getPasswordResetRequests(showReviewed);
+      const [data, counts] = await Promise.all([
+        adminApi.getPasswordResetRequests(showReviewed),
+        adminApi.getAdminPendingCounts(),
+      ]);
       setRequests(data);
+      setPendingCount(counts.password_reset_requests || 0);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to load password reset requests.');
     } finally {
@@ -53,7 +55,7 @@ export default function ManagePasswordResetRequests() {
     try {
       await adminApi.reviewPasswordResetRequest(requestId, { action });
       setSuccess(action === 'complete' ? 'Request marked complete.' : 'Request rejected.');
-      await load();
+      await Promise.all([load(), refreshNav()]);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to update request.');
     } finally {

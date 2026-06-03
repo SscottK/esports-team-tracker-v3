@@ -6,9 +6,14 @@ from accounts.models import BetaFeedback, PasswordResetRequest, PasswordResetReq
 
 @admin.register(BetaFeedback)
 class BetaFeedbackAdmin(admin.ModelAdmin):
-    list_display = ('user', 'page_url', 'created_at')
+    list_display = ('user', 'page_url', 'is_reviewed_display', 'created_at', 'reviewed_by')
+    list_filter = ('reviewed_at',)
     search_fields = ('user__username', 'message', 'page_url')
-    readonly_fields = ('user', 'message', 'page_url', 'created_at')
+    readonly_fields = ('user', 'message', 'page_url', 'created_at', 'reviewed_at', 'reviewed_by')
+
+    @admin.display(boolean=True, description='Reviewed')
+    def is_reviewed_display(self, obj):
+        return obj.reviewed_at is not None
 
 
 @admin.register(PasswordResetRequest)

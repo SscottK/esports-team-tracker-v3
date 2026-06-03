@@ -80,7 +80,23 @@ class CreateBetaFeedbackSerializer(serializers.Serializer):
 class AdminBetaFeedbackSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     user_id = serializers.IntegerField(source='user.id', read_only=True)
+    is_reviewed = serializers.SerializerMethodField()
+    reviewed_by_username = serializers.CharField(source='reviewed_by.username', read_only=True, allow_null=True)
 
     class Meta:
         model = BetaFeedback
-        fields = ['id', 'user_id', 'username', 'message', 'page_url', 'created_at']
+        fields = [
+            'id',
+            'user_id',
+            'username',
+            'message',
+            'page_url',
+            'is_reviewed',
+            'reviewed_by',
+            'reviewed_by_username',
+            'reviewed_at',
+            'created_at',
+        ]
+
+    def get_is_reviewed(self, obj):
+        return obj.reviewed_at is not None

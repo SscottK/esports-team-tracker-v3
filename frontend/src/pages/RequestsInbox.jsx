@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
+import { useAuth } from '../context/AuthContext';
 import { useNav } from '../context/NavContext';
 import * as orgApi from '../api/orgs';
 import * as teamApi from '../api/teams';
@@ -128,6 +130,7 @@ function InboxList({
 }
 
 export default function RequestsInbox() {
+  const { user } = useAuth();
   const { refreshNav } = useNav();
   const [pending, setPending] = useState([]);
   const [reviewed, setReviewed] = useState([]);
@@ -240,6 +243,26 @@ export default function RequestsInbox() {
     >
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
+
+      {user?.is_staff && (
+        <section className="esports-panel form-page-panel mb-4">
+          <h3 className="coach-tools-section-title">Platform admin</h3>
+          <p className="form-page-intro mb-3">
+            Review beta feedback, password reset requests, and game suggestions from the staff queue.
+          </p>
+          <div className="coach-tools-actions">
+            <Button as={Link} to="/admin/beta-feedback" variant="outline-primary" size="sm">
+              Beta feedback
+            </Button>
+            <Button as={Link} to="/admin/password-reset-requests" variant="outline-primary" size="sm">
+              Password reset requests
+            </Button>
+            <Button as={Link} to="/admin/game-suggestions" variant="outline-primary" size="sm">
+              Game suggestions
+            </Button>
+          </div>
+        </section>
+      )}
 
       <section className="esports-panel form-page-panel">
         <div className="inbox-tabs" role="tablist" aria-label="Request lists">

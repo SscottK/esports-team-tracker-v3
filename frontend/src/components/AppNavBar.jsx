@@ -52,7 +52,7 @@ function ThemeToggleButton() {
 
 export default function AppNavBar() {
   const { user, logout } = useAuth();
-  const { organizations, teams, pendingCount } = useNav();
+  const { organizations, teams, notificationCount } = useNav();
   const [showMenu, setShowMenu] = useState(false);
   const [openFlyout, setOpenFlyout] = useState(null);
 
@@ -91,16 +91,16 @@ export default function AppNavBar() {
               <NavLink
                 to="/requests"
                 className="nav-requests-btn position-relative"
-                aria-label={`Requests${pendingCount ? `, ${pendingCount} pending` : ''}`}
+                aria-label={`Requests${notificationCount ? `, ${notificationCount} pending` : ''}`}
               >
                 <span className="nav-requests-icon" aria-hidden="true">🔔</span>
-                {pendingCount > 0 && (
+                {notificationCount > 0 && (
                   <Badge
                     bg="danger"
                     pill
                     className="nav-requests-badge"
                   >
-                    {pendingCount > 99 ? '99+' : pendingCount}
+                    {notificationCount > 99 ? '99+' : notificationCount}
                   </Badge>
                 )}
               </NavLink>

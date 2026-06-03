@@ -12,7 +12,19 @@ export const reviewPasswordResetRequest = async (requestId, payload) => {
   return response.data;
 };
 
-export const getBetaFeedback = async () => {
-  const response = await apiClient.get('/admin/beta-feedback/');
+export const getBetaFeedback = async (showReviewed = false) => {
+  const response = await apiClient.get('/admin/beta-feedback/', {
+    params: showReviewed ? { show_reviewed: 'true' } : undefined,
+  });
+  return response.data;
+};
+
+export const reviewBetaFeedback = async (feedbackId) => {
+  const response = await apiClient.patch(`/admin/beta-feedback/${feedbackId}/`);
+  return response.data;
+};
+
+export const getAdminPendingCounts = async () => {
+  const response = await apiClient.get('/admin/pending-counts/');
   return response.data;
 };

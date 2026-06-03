@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -10,6 +11,7 @@ from accounts.services.password_reset_requests import (
     create_password_reset_request,
     review_password_reset_request,
 )
+from games.models import GameSuggestion
 from performances.permissions import IsPlatformAdmin
 from .serializers import (
     AdminBetaFeedbackSerializer,
@@ -123,5 +125,40 @@ class AdminBetaFeedbackView(APIView):
     permission_classes = [IsAuthenticated, IsPlatformAdmin]
 
     def get(self, request):
-        queryset = BetaFeedback.objects.select_related('user')
+        show_reviewed = request.query_params.get('show_reviewed', '').lower() in ('1', 'true', 'yes')
+        queryset = BetaFeedback.objects.select_related('user', 'reviewed_by')
+        if not show_reviewed:
+            queryset = queryset.filter(reviewed_at__isnull=True)
         return Response(AdminBetaFeedbackSerializer(queryset, many=True).data)
+
+
+class AdminBetaFeedbackDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def patch(self, request, feedback_id):
+        feedback = BetaFeedback.objects.filter(pk=feedback_id).select_related('user', 'reviewed_by').first()
+        if not feedback:
+            return Response({'detail': 'Feedback not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if feedback.reviewed_at:
+            return Response({'detail': 'Feedback has already been reviewed.'}, status=status.HTTP_400_BAD_REQUEST)
+        feedback.reviewed_by = request.user
+        feedback.reviewed_at = timezone.now()
+        feedback.save(update_fields=['reviewed_by', 'reviewed_at'])
+        return Response(AdminBetaFeedbackSerializer(feedback).data)
+
+
+class AdminPendingCountsView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def get(self, request):
+        beta_feedback = BetaFeedback.objects.filter(reviewed_at__isnull=True).count()
+        password_reset_requests = PasswordResetRequest.objects.filter(
+            status=PasswordResetRequestStatus.PENDING,
+        ).count()
+        game_suggestions = GameSuggestion.objects.filter(is_reviewed=False).count()
+        return Response({
+            'beta_feedback': beta_feedback,
+            'password_reset_requests': password_reset_requests,
+            'game_suggestions': game_suggestions,
+            'total': beta_feedback + password_reset_requests + game_suggestions,
+        })
