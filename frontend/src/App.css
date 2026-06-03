@@ -51,6 +51,17 @@ body {
   gap: 0.4rem;
 }
 
+.page-header .btn,
+.page-header-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 31px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 @media (min-width: 768px) {
   .page-header-actions {
     justify-content: flex-end;

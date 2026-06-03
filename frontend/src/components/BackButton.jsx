@@ -5,6 +5,7 @@ export default function BackButton({
   fallback = '/dashboard',
   label = 'Back',
   variant = 'outline-primary',
+  size = 'sm',
   ...props
 }) {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function BackButton({
   };
 
   return (
-    <Button variant={variant} onClick={handleBack} {...props}>
+    <Button variant={variant} size={size} onClick={handleBack} {...props}>
       {label}
     </Button>
   );
