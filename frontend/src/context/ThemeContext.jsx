@@ -102,5 +102,3 @@ export function useTheme() {
   }
   return context;
 }
-
-export { DEFAULT_TEAM_COLOR_THEME, TEAM_COLOR_THEME_OPTIONS, normalizeTeamColorTheme };
