@@ -31,6 +31,14 @@ class LeaveOrgSerializer(serializers.Serializer):
 class CreateOrganizationSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
 
+    def validate(self, attrs):
+        user = self.context['request'].user
+        if OrgMembership.objects.filter(user=user).exists():
+            raise serializers.ValidationError(
+                'Leave your current organization before creating a new one.',
+            )
+        return attrs
+
     def create(self, validated_data):
         user = self.context['request'].user
         organization = Organization.objects.create(name=validated_data['name'])

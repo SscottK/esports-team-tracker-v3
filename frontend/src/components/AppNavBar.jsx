@@ -183,16 +183,18 @@ export default function AppNavBar() {
                 <div className="nav-flyout-panel" role="region" aria-label="Organizations submenu">
                   <div className="nav-flyout-panel-header">Organizations</div>
                   <div className="nav-flyout-panel-body">
-                    <Nav.Link
-                      as={NavLink}
-                      to="/join-organization"
-                      onClick={closeMenu}
-                      className="nav-submenu-link nav-submenu-link-action"
-                    >
-                      Create or join organization
-                    </Nav.Link>
                     {organizations.length === 0 ? (
-                      <p className="text-muted small mb-0 px-3 py-2">No organizations yet.</p>
+                      <>
+                        <Nav.Link
+                          as={NavLink}
+                          to="/join-organization"
+                          onClick={closeMenu}
+                          className="nav-submenu-link nav-submenu-link-action"
+                        >
+                          Create or join organization
+                        </Nav.Link>
+                        <p className="text-muted small mb-0 px-3 py-2">No organizations yet.</p>
+                      </>
                     ) : (
                       organizations.map((org) => (
                         <Nav.Link

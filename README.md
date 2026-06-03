@@ -96,7 +96,7 @@ Nav bell count = incoming **Pending** only.
 | Action | Who |
 |--------|-----|
 | Games / activities catalog | Platform admin (`is_staff`) |
-| Organizations | Any user (multiple org memberships allowed) |
+| Organizations | One org per user; leave before create/join another |
 | Create teams | Org leaders |
 | Coach tools, benchmarks, CSV times | Team coaches |
 | Team invites, team colors | Head coach |

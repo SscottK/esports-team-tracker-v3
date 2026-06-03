@@ -10,6 +10,15 @@ class OrgJoinRequestError(Exception):
         self.status_code = status_code
 
 
+ALREADY_IN_ORG_MESSAGE = (
+    'Leave your current organization before creating or joining another one.'
+)
+
+
+def user_belongs_to_another_org(user, organization_id):
+    return OrgMembership.objects.filter(user=user).exclude(organization_id=organization_id).exists()
+
+
 def create_org_join_request(user, code):
     join_code = OrgJoinCode.objects.select_related('organization').filter(
         code__iexact=code.strip(),
@@ -20,6 +29,8 @@ def create_org_join_request(user, code):
     organization = join_code.organization
     if OrgMembership.objects.filter(user=user, organization=organization).exists():
         raise OrgJoinRequestError('You are already a member of this organization.')
+    if user_belongs_to_another_org(user, organization.id):
+        raise OrgJoinRequestError(ALREADY_IN_ORG_MESSAGE)
     if OrgJoinRequest.objects.filter(
         user=user,
         organization=organization,
@@ -76,6 +87,10 @@ def review_org_join_request(reviewer, request_id, org_id, *, action):
         organization=join_request.organization,
     ).exists():
         raise OrgJoinRequestError('User is already a member of this organization.')
+    if user_belongs_to_another_org(join_request.user, join_request.organization_id):
+        raise OrgJoinRequestError(
+            'This user must leave their current organization before joining another one.',
+        )
 
     with transaction.atomic():
         membership = OrgMembership.objects.create(

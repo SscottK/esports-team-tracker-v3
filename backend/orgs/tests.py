@@ -120,25 +120,34 @@ class MultiOrgMembershipTests(TestCase):
 
         OrgMembership.objects.create(user=self.user, organization=self.org_one, is_admin=True)
 
-    def test_list_returns_all_user_organizations(self):
-        OrgMembership.objects.create(user=self.user, organization=self.org_two, is_admin=False)
+    def test_list_returns_user_organizations(self):
         response = self.client.get('/api/organizations/me/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['organizations']), 2)
+        self.assertEqual(len(response.data['organizations']), 1)
 
-    def test_user_can_create_second_organization(self):
+    def test_user_cannot_create_second_organization(self):
         response = self.client.post('/api/organizations/me/', {'name': 'Org Three'}, format='json')
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(OrgMembership.objects.filter(user=self.user).count(), 2)
-
-    def test_user_can_request_and_be_approved_into_second_organization(self):
-        response = self.client.post('/api/organizations/join/', {'code': 'JOINORG2'}, format='json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(OrgMembership.objects.filter(user=self.user).count(), 1)
 
-        join_request_id = response.data['id']
+    def test_user_cannot_request_join_while_in_another_organization(self):
+        response = self.client.post('/api/organizations/join/', {'code': 'JOINORG2'}, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(OrgMembership.objects.filter(user=self.user).count(), 1)
+
+    def test_user_without_org_can_request_join(self):
+        OrgMembership.objects.filter(user=self.user).delete()
+        response = self.client.post('/api/organizations/join/', {'code': 'JOINORG2'}, format='json')
+        self.assertEqual(response.status_code, 201)
+
+    def test_leader_cannot_approve_join_for_user_already_in_another_org(self):
+        OrgMembership.objects.filter(user=self.user).delete()
+        join_response = self.client.post('/api/organizations/join/', {'code': 'JOINORG2'}, format='json')
+        self.assertEqual(join_response.status_code, 201)
+        join_request_id = join_response.data['id']
+
+        OrgMembership.objects.create(user=self.user, organization=self.org_one, is_admin=False)
         leader = User.objects.create_user(username='orgtwoleader', password='pass12345')
-        OrgMembership.objects.filter(organization=self.org_two).delete()
         OrgMembership.objects.create(user=leader, organization=self.org_two, is_admin=True)
 
         self.client.force_authenticate(user=leader)
@@ -147,10 +156,11 @@ class MultiOrgMembershipTests(TestCase):
             {'action': 'approve'},
             format='json',
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(OrgMembership.objects.filter(user=self.user).count(), 2)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(OrgMembership.objects.filter(user=self.user).count(), 1)
 
     def test_cannot_request_same_organization_twice(self):
+        OrgMembership.objects.filter(user=self.user).delete()
         response = self.client.post('/api/organizations/join/', {'code': 'JOINORG2'}, format='json')
         self.assertEqual(response.status_code, 201)
         response = self.client.post('/api/organizations/join/', {'code': 'JOINORG2'}, format='json')
