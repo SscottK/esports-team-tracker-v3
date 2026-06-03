@@ -31,6 +31,7 @@ import ManageBetaFeedback from './pages/ManageBetaFeedback';
 import BetaFeedback from './pages/BetaFeedback';
 import ForgotPassword from './pages/ForgotPassword';
 import AppFooter from './components/AppFooter';
+import DocumentTitle from './components/DocumentTitle';
 import './App.css';
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
         <NavProvider>
           <BrowserRouter>
             <ThemeProvider>
+              <DocumentTitle />
               <div className="app-shell">
                 <AppNavBar />
                 <main className="app-main">

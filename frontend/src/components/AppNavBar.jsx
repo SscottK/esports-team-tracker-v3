@@ -81,7 +81,7 @@ export default function AppNavBar() {
             </Button>
           )}
 
-          <Navbar.Brand as={Link} to={user ? '/dashboard' : '/'} className="me-auto">
+          <Navbar.Brand as={Link} to={user ? '/dashboard' : '/'} className="app-navbar-brand">
             Esports Team Tracker
           </Navbar.Brand>
 
@@ -108,10 +108,10 @@ export default function AppNavBar() {
           )}
 
           {!user && (
-            <Nav className="ms-auto align-items-center gap-2">
-              <Nav.Link as={NavLink} to="/signin">Sign in</Nav.Link>
-              <Nav.Link as={NavLink} to="/signup">Sign up</Nav.Link>
-            </Nav>
+            <div className="nav-auth-actions d-flex flex-row flex-nowrap align-items-center ms-auto">
+              <NavLink to="/signin" className="nav-link nav-auth-link">Sign in</NavLink>
+              <NavLink to="/signup" className="nav-link nav-auth-link">Sign up</NavLink>
+            </div>
           )}
         </Container>
       </Navbar>
