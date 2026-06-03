@@ -27,7 +27,7 @@ export default function TimesGridTable({ grid }) {
   const trackLabel = activityLabel(grid?.game, true);
 
   if (!grid?.levels?.length) {
-    return <p className="text-muted">No {trackLabel.toLowerCase()} yet for this game.</p>;
+    return <p className="dashboard-empty-copy mb-0">No {trackLabel.toLowerCase()} yet for this game.</p>;
   }
 
   return (
@@ -80,35 +80,33 @@ export function MobileGridCards({ grid }) {
   return (
     <div className="d-md-none mobile-grid-cards">
       {grid.levels.map((level) => (
-        <div key={level.id} className="card mb-3 shadow-sm">
-          <div className="card-body">
-            <h2 className="h6 mb-1">{level.name}</h2>
-            {(level.level_group || level.is_dlc) && (
-              <p className="small text-muted mb-2 d-flex align-items-center gap-2 flex-wrap">
-                {level.level_group && <span>{level.level_group}</span>}
-                {level.is_dlc && (
-                  <Badge bg="secondary" className="grid-dlc-badge">DLC</Badge>
-                )}
-              </p>
-            )}
-            <div className="small mb-2">
-              <span className="me-2">Par 1: {level.benchmark.target_fast || '—'}</span>
-              <span className="me-2">Par 2: {level.benchmark.target_slow || '—'}</span>
-              <span>Elite: {level.benchmark.elite || '—'}</span>
-            </div>
-            {grid.members.map((member) => {
-              const cell = level.results[String(member.id)] || {};
-              return (
-                <div
-                  key={member.id}
-                  className={`d-flex justify-content-between py-1 border-top ${statusClass[cell.status] || ''}`}
-                >
-                  <span>{member.username}</span>
-                  <span>{cell.display || '—'}</span>
-                </div>
-              );
-            })}
+        <div key={level.id} className="esports-panel mobile-grid-card">
+          <h2 className="mobile-grid-card-title">{level.name}</h2>
+          {(level.level_group || level.is_dlc) && (
+            <p className="mobile-grid-card-meta d-flex align-items-center gap-2 flex-wrap">
+              {level.level_group && <span>{level.level_group}</span>}
+              {level.is_dlc && (
+                <Badge bg="secondary" className="grid-dlc-badge">DLC</Badge>
+              )}
+            </p>
+          )}
+          <div className="mobile-grid-card-benchmarks">
+            <span>Par 1: {level.benchmark.target_fast || '—'}</span>
+            <span>Par 2: {level.benchmark.target_slow || '—'}</span>
+            <span>Elite: {level.benchmark.elite || '—'}</span>
           </div>
+          {grid.members.map((member) => {
+            const cell = level.results[String(member.id)] || {};
+            return (
+              <div
+                key={member.id}
+                className={`mobile-grid-member-row ${statusClass[cell.status] || ''}`}
+              >
+                <span>{member.username}</span>
+                <span>{cell.display || '—'}</span>
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>
@@ -117,14 +115,14 @@ export function MobileGridCards({ grid }) {
 
 export function LeaderboardTable({ leaderboard, game }) {
   if (!leaderboard?.length) {
-    return <p className="text-muted mb-0">No times recorded yet.</p>;
+    return <p className="dashboard-empty-copy mb-0">No times recorded yet.</p>;
   }
 
   const trackLabel = activityLabel(game, true);
 
   return (
     <div className="grid-scroll-wrapper">
-      <table className="table table-sm table-striped leaderboard-table mb-0">
+      <table className="table table-sm times-grid leaderboard-table mb-0">
         <thead>
           <tr>
             <th>#</th>

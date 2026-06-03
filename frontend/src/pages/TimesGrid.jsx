@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Page from '../components/Page';
 import BackButton from '../components/BackButton';
@@ -22,6 +21,7 @@ export default function TimesGrid() {
   const [teamsWithGame, setTeamsWithGame] = useState([]);
   const [includeCoachCompetitors, setIncludeCoachCompetitors] = useState(false);
   const [includeDlc, setIncludeDlc] = useState(true);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [viewer, setViewer] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -75,6 +75,10 @@ export default function TimesGrid() {
 
   const trackLabel = activityLabel(grid?.game, true);
   const showTeamSwitcher = teamsWithGame.length > 1;
+  const showGridToggles = viewer?.can_toggle_dlc || viewer?.can_toggle_coach_competitors;
+  const leaderboardSummary = leaderboard.length > 0
+    ? `${leaderboard.length} ranked`
+    : 'No times yet';
 
   const handleTeamChange = (nextTeamId) => {
     if (String(nextTeamId) !== String(teamId)) {
@@ -87,20 +91,20 @@ export default function TimesGrid() {
       title={grid ? `${teamName} — ${grid.game.name}` : 'Times grid'}
       className="dashboard-page"
       actions={(
-        <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-sm-auto">
-          <Button as={Link} to={`/teams/${teamId}/games/${gameId}/compare`} variant="outline-primary">
+        <div className="page-header-actions">
+          <Button as={Link} to={`/teams/${teamId}/games/${gameId}/compare`} variant="outline-primary" size="sm">
             Compare
           </Button>
-          <Button as={Link} to={`/teams/${teamId}/time-history?game=${gameId}`} variant="outline-primary">
+          <Button as={Link} to={`/teams/${teamId}/time-history?game=${gameId}`} variant="outline-primary" size="sm">
             Time history
           </Button>
           {viewer?.can_add_time && (
-            <Button as={Link} to={`/teams/${teamId}/add-time?game=${gameId}`} variant="outline-primary">
+            <Button as={Link} to={`/teams/${teamId}/add-time?game=${gameId}`} variant="outline-primary" size="sm">
               Add time
             </Button>
           )}
           {viewer?.is_coach && (
-            <Button as={Link} to={`/teams/${teamId}/upload-times?game=${gameId}`} variant="outline-primary">
+            <Button as={Link} to={`/teams/${teamId}/upload-times?game=${gameId}`} variant="outline-primary" size="sm">
               Upload CSV
             </Button>
           )}
@@ -131,54 +135,74 @@ export default function TimesGrid() {
       )}
 
       {loading ? (
-        <p>Loading grid...</p>
-      ) : (
+        <div className="dashboard-loading">Loading grid...</div>
+      ) : grid ? (
         <>
-          {viewer?.can_toggle_dlc && (
-            <Form.Check
-              type="switch"
-              id="include-dlc-tracks"
-              className="mb-3"
-              label="Show DLC tracks (Booster Course Pass)"
-              checked={includeDlc}
-              onChange={(e) => setIncludeDlc(e.target.checked)}
-            />
+          {showGridToggles && (
+            <section className="esports-panel times-grid-toolbar mb-3">
+              {viewer?.can_toggle_dlc && (
+                <Form.Check
+                  type="switch"
+                  id="include-dlc-tracks"
+                  className="times-grid-toggle mb-0"
+                  label="Show DLC tracks (Booster Course Pass)"
+                  checked={includeDlc}
+                  onChange={(e) => setIncludeDlc(e.target.checked)}
+                />
+              )}
+              {viewer?.can_toggle_coach_competitors && (
+                <Form.Check
+                  type="switch"
+                  id="include-coach-competitors"
+                  className="times-grid-toggle mb-0"
+                  label="Show coach times (coaches who also compete)"
+                  checked={includeCoachCompetitors}
+                  onChange={(e) => setIncludeCoachCompetitors(e.target.checked)}
+                />
+              )}
+            </section>
           )}
 
-          {viewer?.can_toggle_coach_competitors && (
-            <Form.Check
-              type="switch"
-              id="include-coach-competitors"
-              className="mb-3"
-              label="Show coach times (coaches who also compete)"
-              checked={includeCoachCompetitors}
-              onChange={(e) => setIncludeCoachCompetitors(e.target.checked)}
-            />
-          )}
+          <section className="esports-panel times-grid-accordion mb-3">
+            <button
+              type="button"
+              className="times-grid-accordion-trigger"
+              onClick={() => setShowLeaderboard((open) => !open)}
+              aria-expanded={showLeaderboard}
+              aria-controls="times-grid-leaderboard-panel"
+            >
+              <span className="times-grid-accordion-title">Leaderboard</span>
+              <span className="times-grid-accordion-meta">{leaderboardSummary}</span>
+              <span
+                className={`times-grid-accordion-chevron${showLeaderboard ? ' is-open' : ''}`}
+                aria-hidden="true"
+              >
+                ›
+              </span>
+            </button>
+            {showLeaderboard && (
+              <div id="times-grid-leaderboard-panel" className="times-grid-accordion-body">
+                <LeaderboardTable leaderboard={leaderboard} game={grid.game} />
+              </div>
+            )}
+          </section>
 
-          <Card className="mb-4">
-            <Card.Body>
-              <Card.Title>Leaderboard</Card.Title>
-              <LeaderboardTable leaderboard={leaderboard} game={grid.game} />
-            </Card.Body>
-          </Card>
-
-          <Card className="mb-3">
-            <Card.Body className="pb-0">
-              <Card.Title>{trackLabel} times</Card.Title>
-              <p className="text-muted small mb-0">
+          <section className="esports-panel times-grid-main-panel">
+            <div className="times-grid-section-head">
+              <h2 className="dashboard-panel-title">{trackLabel} times</h2>
+              <p className="dashboard-panel-meta mb-0">
                 DLC tracks show by default. Turn off the toggle to hide Booster Course Pass cups.
                 Only competing team members are shown unless coach times are toggled above.
               </p>
-            </Card.Body>
-          </Card>
+            </div>
 
-          <div className="d-none d-md-block">
-            <TimesGridTable grid={grid} />
-          </div>
-          <MobileGridCards grid={grid} />
+            <div className="d-none d-md-block">
+              <TimesGridTable grid={grid} />
+            </div>
+            <MobileGridCards grid={grid} />
+          </section>
         </>
-      )}
+      ) : null}
     </Page>
   );
 }

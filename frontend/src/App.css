@@ -433,6 +433,16 @@ body {
   white-space: nowrap;
   vertical-align: middle;
   color: var(--esports-text);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.times-grid thead th {
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--esports-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .times-grid .sticky-col {
@@ -1165,6 +1175,164 @@ body {
 .grid-team-switcher-note {
   color: var(--esports-muted);
   font-size: 0.85rem;
+}
+
+/* Times grid page */
+.times-grid-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .times-grid-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem 2rem;
+  }
+}
+
+.times-grid-toggle .form-check-label {
+  color: var(--esports-text);
+  font-size: 0.9rem;
+}
+
+.times-grid-accordion {
+  padding: 0;
+  overflow: hidden;
+}
+
+.times-grid-accordion-trigger {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  width: 100%;
+  padding: 0.95rem 1.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--esports-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.times-grid-accordion-trigger:hover,
+.times-grid-accordion-trigger:focus-visible {
+  background: rgba(34, 211, 238, 0.06);
+  outline: none;
+}
+
+.times-grid-accordion-title {
+  color: var(--esports-text);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.times-grid-accordion-meta {
+  color: var(--esports-muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.times-grid-accordion-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--esports-accent);
+  font-size: 1.25rem;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 0.2s ease;
+}
+
+.times-grid-accordion-chevron.is-open {
+  transform: rotate(-90deg);
+}
+
+.times-grid-accordion-body {
+  padding: 0 1.25rem 1.15rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.times-grid-main-panel {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.times-grid-section-head {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.leaderboard-table thead th {
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--esports-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.leaderboard-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mobile-grid-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.mobile-grid-card {
+  padding: 0.95rem 1rem;
+}
+
+.mobile-grid-card-title {
+  margin: 0 0 0.35rem;
+  color: var(--esports-text);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.mobile-grid-card-meta {
+  margin: 0 0 0.65rem;
+  color: var(--esports-muted);
+  font-size: 0.82rem;
+}
+
+.mobile-grid-card-benchmarks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  margin-bottom: 0.65rem;
+  color: var(--esports-muted);
+  font-size: 0.8rem;
+}
+
+.mobile-grid-member-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  color: var(--esports-text);
+  font-size: 0.88rem;
+}
+
+.mobile-grid-member-row:first-of-type {
+  border-top: 0;
 }
 
 /* Team detail */
