@@ -262,40 +262,9 @@ export default function RequestsInbox() {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
-      {user?.is_staff && (
-        <section className="esports-panel form-page-panel mb-4">
-          <h3 className="coach-tools-section-title">Platform admin</h3>
-          <p className="form-page-intro mb-3">
-            Review beta feedback, password reset requests, and game suggestions from the staff queue.
-            {adminPendingCounts.total > 0 && (
-              <>
-                {' '}
-                <strong>{adminPendingCounts.total} item{adminPendingCounts.total === 1 ? '' : 's'} need review.</strong>
-              </>
-            )}
-          </p>
-          <div className="admin-queue-list">
-            {adminQueues.map((queue) => (
-              <Link
-                key={queue.to}
-                to={queue.to}
-                className={`admin-queue-link${queue.count > 0 ? ' admin-queue-link-pending' : ''}`}
-              >
-                <span className="admin-queue-link-label">{queue.label}</span>
-                {queue.count > 0 ? (
-                  <Badge bg="danger" className="admin-queue-link-badge">
-                    {queue.count} pending
-                  </Badge>
-                ) : (
-                  <span className="admin-queue-link-status">Up to date</span>
-                )}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="esports-panel form-page-panel">
+      <div className="inbox-section">
+        <h2 className="inbox-section-heading">Requests</h2>
+        <section className="esports-panel form-page-panel">
         <div className="inbox-tabs" role="tablist" aria-label="Request lists">
           <Button
             type="button"
@@ -352,7 +321,43 @@ export default function RequestsInbox() {
           busy={busy}
           showActions={view === 'pending' || view === 'sent'}
         />
-      </section>
+        </section>
+      </div>
+
+      {user?.is_staff && (
+        <div className="inbox-section">
+          <h2 className="inbox-section-heading">Admin Requests</h2>
+          <section className="esports-panel form-page-panel">
+            <p className="form-page-intro mb-3">
+              Review beta feedback, password reset requests, and game suggestions from the staff queue.
+              {adminPendingCounts.total > 0 && (
+                <>
+                  {' '}
+                  <strong>{adminPendingCounts.total} item{adminPendingCounts.total === 1 ? '' : 's'} need review.</strong>
+                </>
+              )}
+            </p>
+            <div className="admin-queue-list">
+              {adminQueues.map((queue) => (
+                <Link
+                  key={queue.to}
+                  to={queue.to}
+                  className={`admin-queue-link${queue.count > 0 ? ' admin-queue-link-pending' : ''}`}
+                >
+                  <span className="admin-queue-link-label">{queue.label}</span>
+                  {queue.count > 0 ? (
+                    <Badge bg="danger" className="admin-queue-link-badge">
+                      {queue.count} pending
+                    </Badge>
+                  ) : (
+                    <span className="admin-queue-link-status">Up to date</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </Page>
   );
 }

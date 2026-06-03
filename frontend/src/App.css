@@ -2104,6 +2104,19 @@ html[data-color-mode='light'] .server-wake-overlay {
   gap: 0.45rem;
 }
 
+.inbox-section + .inbox-section {
+  margin-top: 1.75rem;
+}
+
+.inbox-section-heading {
+  margin: 0 0 0.65rem;
+  color: var(--esports-text);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .admin-queue-list {
   display: flex;
   flex-direction: column;
