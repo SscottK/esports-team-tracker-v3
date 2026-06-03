@@ -40,6 +40,11 @@ export const getTeam = async (teamId) => {
   return response.data;
 };
 
+export const updateTeamTheme = async (teamId, colorTheme) => {
+  const response = await apiClient.patch(`/teams/${teamId}/`, { color_theme: colorTheme });
+  return response.data;
+};
+
 export const leaveTeam = async (teamId, payload = {}) => {
   const response = await apiClient.post(`/teams/${teamId}/leave/`, payload);
   return response.data;

@@ -11,6 +11,15 @@ class CoachRole(models.TextChoices):
     HEAD = 'head', 'Head Coach'
 
 
+class TeamColorTheme(models.TextChoices):
+    CYAN = 'cyan', 'Cyan'
+    EMERALD = 'emerald', 'Emerald'
+    VIOLET = 'violet', 'Violet'
+    AMBER = 'amber', 'Amber'
+    ROSE = 'rose', 'Rose'
+    COBALT = 'cobalt', 'Cobalt'
+
+
 class Team(models.Model):
     organization = models.ForeignKey(
         Organization,
@@ -18,6 +27,11 @@ class Team(models.Model):
         related_name='teams',
     )
     name = models.CharField(max_length=100)
+    color_theme = models.CharField(
+        max_length=20,
+        choices=TeamColorTheme.choices,
+        default=TeamColorTheme.CYAN,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -8,6 +8,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import { useAuth } from '../context/AuthContext';
 import { useNav } from '../context/NavContext';
+import { useTheme } from '../context/ThemeContext';
 
 function FlyoutTrigger({ label, isOpen, onOpen }) {
   return (
@@ -19,6 +20,32 @@ function FlyoutTrigger({ label, isOpen, onOpen }) {
     >
       <span>{label}</span>
       <span className="nav-flyout-arrow" aria-hidden="true">›</span>
+    </button>
+  );
+}
+
+function ThemeToggleButton() {
+  const { colorMode, toggleColorMode } = useTheme();
+  const isDark = colorMode === 'dark';
+
+  return (
+    <button
+      type="button"
+      className="nav-theme-btn"
+      onClick={toggleColorMode}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {isDark ? (
+        <svg className="nav-theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.25" />
+          <path d="M12 2.5v2.2M12 19.3v2.2M4.7 12H2.5M21.5 12h-2.2M6.4 6.4l-1.55-1.55M19.15 19.15l-1.55-1.55M17.6 6.4l1.55-1.55M4.85 19.15l1.55-1.55" />
+        </svg>
+      ) : (
+        <svg className="nav-theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 14.8A7.5 7.5 0 0 1 9.2 3a6.2 6.2 0 1 0 12.8 11.8Z" />
+        </svg>
+      )}
     </button>
   );
 }
@@ -59,22 +86,25 @@ export default function AppNavBar() {
           </Navbar.Brand>
 
           {user && (
-            <NavLink
-              to="/requests"
-              className="nav-requests-btn position-relative"
-              aria-label={`Requests${pendingCount ? `, ${pendingCount} pending` : ''}`}
-            >
-              <span className="nav-requests-icon" aria-hidden="true">🔔</span>
-              {pendingCount > 0 && (
-                <Badge
-                  bg="danger"
-                  pill
-                  className="nav-requests-badge"
-                >
-                  {pendingCount > 99 ? '99+' : pendingCount}
-                </Badge>
-              )}
-            </NavLink>
+            <div className="nav-utility-actions">
+              <ThemeToggleButton />
+              <NavLink
+                to="/requests"
+                className="nav-requests-btn position-relative"
+                aria-label={`Requests${pendingCount ? `, ${pendingCount} pending` : ''}`}
+              >
+                <span className="nav-requests-icon" aria-hidden="true">🔔</span>
+                {pendingCount > 0 && (
+                  <Badge
+                    bg="danger"
+                    pill
+                    className="nav-requests-badge"
+                  >
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </Badge>
+                )}
+              </NavLink>
+            </div>
           )}
 
           {!user && (

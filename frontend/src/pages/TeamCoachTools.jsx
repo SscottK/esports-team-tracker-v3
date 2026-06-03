@@ -8,12 +8,15 @@ import Modal from 'react-bootstrap/Modal';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
 import { migrationStatusLabel, roleLabel } from '../utils/teamMembership';
+import { TEAM_COLOR_THEME_OPTIONS, normalizeTeamColorTheme } from '../utils/teamThemes';
+import { useNav } from '../context/NavContext';
 import * as gamesApi from '../api/games';
 import * as teamApi from '../api/teams';
 
 export default function TeamCoachTools() {
   const { teamId } = useParams();
   const navigate = useNavigate();
+  const { refreshNav } = useNav();
   const [team, setTeam] = useState(null);
   const [teamGames, setTeamGames] = useState([]);
   const [catalogGames, setCatalogGames] = useState([]);
@@ -74,6 +77,25 @@ export default function TeamCoachTools() {
       navigate(`/teams/${teamId}`, { replace: true });
     }
   }, [loading, myMembership, navigate, teamId]);
+
+  const handleThemeChange = async (colorTheme) => {
+    if (normalizeTeamColorTheme(team?.color_theme) === colorTheme) {
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setSuccess('');
+    try {
+      const updated = await teamApi.updateTeamTheme(teamId, colorTheme);
+      setTeam(updated);
+      await refreshNav();
+      setSuccess('Team colors updated.');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Unable to update team colors.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleAddGame = async (event) => {
     event.preventDefault();
@@ -247,6 +269,37 @@ export default function TeamCoachTools() {
           </span>
         </div>
       </div>
+
+      {isHeadCoach && (
+        <section className="esports-panel coach-tools-panel mb-4">
+          <h3 className="coach-tools-section-title">Team colors</h3>
+          <p className="dashboard-panel-meta mb-3">
+            Pick an accent palette. Team members see these colors across the app while viewing this team.
+          </p>
+          <div className="team-theme-picker">
+            {TEAM_COLOR_THEME_OPTIONS.map((theme) => {
+              const isSelected = normalizeTeamColorTheme(team?.color_theme) === theme.id;
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  className={`team-theme-option${isSelected ? ' is-selected' : ''}`}
+                  onClick={() => handleThemeChange(theme.id)}
+                  disabled={busy}
+                  aria-pressed={isSelected}
+                >
+                  <span
+                    className="team-theme-swatch"
+                    style={{ backgroundColor: theme.accent }}
+                    aria-hidden="true"
+                  />
+                  <span className="team-theme-label">{theme.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <div className="coach-tools-grid">
         <section className="esports-panel coach-tools-panel">

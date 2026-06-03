@@ -10,7 +10,13 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ['id', 'organization', 'organization_name', 'name', 'created_at']
+        fields = ['id', 'organization', 'organization_name', 'name', 'color_theme', 'created_at']
+
+
+class UpdateTeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ['color_theme']
 
 
 class TeamMembershipSerializer(serializers.ModelSerializer):
@@ -60,8 +66,11 @@ class AddTeamMemberSerializer(serializers.Serializer):
 class CreateTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['id', 'name', 'organization']
+        fields = ['id', 'name', 'organization', 'color_theme']
         read_only_fields = ['id']
+        extra_kwargs = {
+            'color_theme': {'required': False},
+        }
 
     def validate(self, attrs):
         user = self.context['request'].user

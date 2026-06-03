@@ -34,6 +34,7 @@ from teams.serializers import (
     TeamMembershipSerializer,
     TeamMigrationRequestSerializer,
     TeamSerializer,
+    UpdateTeamSerializer,
     UpdateTeamMembershipSerializer,
 )
 from teams.services.join_requests import (
@@ -67,10 +68,31 @@ class TeamViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return CreateTeamSerializer
+        if self.action in ('update', 'partial_update'):
+            return UpdateTeamSerializer
         return TeamSerializer
 
     def perform_create(self, serializer):
         serializer.save()
+
+    def partial_update(self, request, *args, **kwargs):
+        team = self.get_object()
+        if not user_is_head_coach(request.user, team.pk):
+            return Response(
+                {'detail': 'Only head coaches can update team settings.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        extra_fields = set(request.data.keys()) - {'color_theme'}
+        if extra_fields:
+            return Response(
+                {'detail': 'Only color_theme can be updated.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().partial_update(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = False
+        return self.partial_update(request, *args, **kwargs)
 
 
 class TeamMembershipView(APIView):
@@ -185,6 +207,7 @@ class OrgTeamsView(APIView):
                 'organization': team.organization_id,
                 'organization_name': team.organization.name,
                 'name': team.name,
+                'color_theme': team.color_theme,
                 'created_at': team.created_at,
                 'is_member': team.id in member_team_ids,
                 'pending_join_request_id': pending_requests.get(team.id),
