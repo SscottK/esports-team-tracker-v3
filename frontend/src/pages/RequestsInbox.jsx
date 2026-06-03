@@ -254,17 +254,45 @@ export default function RequestsInbox() {
     },
   ];
 
-  return (
-    <Page
-      title="Requests"
-      actions={<BackButton fallback="/dashboard" />}
-    >
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
+  const adminInboxSection = (
+    <div className="inbox-section inbox-section-admin">
+      <h2 className="inbox-section-heading">Admin Requests</h2>
+      <section className="esports-panel form-page-panel inbox-section-panel">
+        <p className="form-page-intro inbox-section-intro mb-3">
+          Review beta feedback, password reset requests, and game suggestions from the staff queue.
+          {adminPendingCounts.total > 0 && (
+            <>
+              {' '}
+              <strong>{adminPendingCounts.total} item{adminPendingCounts.total === 1 ? '' : 's'} need review.</strong>
+            </>
+          )}
+        </p>
+        <div className="admin-queue-list">
+          {adminQueues.map((queue) => (
+            <Link
+              key={queue.to}
+              to={queue.to}
+              className={`admin-queue-link${queue.count > 0 ? ' admin-queue-link-pending' : ''}`}
+            >
+              <span className="admin-queue-link-label">{queue.label}</span>
+              {queue.count > 0 ? (
+                <Badge bg="danger" className="admin-queue-link-badge">
+                  {queue.count} pending
+                </Badge>
+              ) : (
+                <span className="admin-queue-link-status">Up to date</span>
+              )}
+            </Link>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
 
-      <div className="inbox-section">
-        <h2 className="inbox-section-heading">Requests</h2>
-        <section className="esports-panel form-page-panel">
+  const personalInboxSection = (
+    <div className="inbox-section inbox-section-personal">
+      <h2 className="inbox-section-heading">Requests</h2>
+      <section className="esports-panel form-page-panel inbox-section-panel">
         <div className="inbox-tabs" role="tablist" aria-label="Request lists">
           <Button
             type="button"
@@ -304,7 +332,7 @@ export default function RequestsInbox() {
           </Button>
         </div>
 
-        <p className="form-page-intro">{introCopy[view]}</p>
+        <p className="form-page-intro inbox-section-intro">{introCopy[view]}</p>
 
         <InboxList
           items={activeItems}
@@ -321,42 +349,25 @@ export default function RequestsInbox() {
           busy={busy}
           showActions={view === 'pending' || view === 'sent'}
         />
-        </section>
-      </div>
+      </section>
+    </div>
+  );
 
-      {user?.is_staff && (
-        <div className="inbox-section">
-          <h2 className="inbox-section-heading">Admin Requests</h2>
-          <section className="esports-panel form-page-panel">
-            <p className="form-page-intro mb-3">
-              Review beta feedback, password reset requests, and game suggestions from the staff queue.
-              {adminPendingCounts.total > 0 && (
-                <>
-                  {' '}
-                  <strong>{adminPendingCounts.total} item{adminPendingCounts.total === 1 ? '' : 's'} need review.</strong>
-                </>
-              )}
-            </p>
-            <div className="admin-queue-list">
-              {adminQueues.map((queue) => (
-                <Link
-                  key={queue.to}
-                  to={queue.to}
-                  className={`admin-queue-link${queue.count > 0 ? ' admin-queue-link-pending' : ''}`}
-                >
-                  <span className="admin-queue-link-label">{queue.label}</span>
-                  {queue.count > 0 ? (
-                    <Badge bg="danger" className="admin-queue-link-badge">
-                      {queue.count} pending
-                    </Badge>
-                  ) : (
-                    <span className="admin-queue-link-status">Up to date</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </section>
+  return (
+    <Page
+      title="Requests"
+      actions={<BackButton fallback="/dashboard" />}
+    >
+      {error && <Alert variant="danger">{error}</Alert>}
+      {success && <Alert variant="success">{success}</Alert>}
+
+      {user?.is_staff ? (
+        <div className="inbox-layout inbox-layout-staff">
+          {adminInboxSection}
+          {personalInboxSection}
         </div>
+      ) : (
+        personalInboxSection
       )}
     </Page>
   );
