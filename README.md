@@ -61,65 +61,9 @@ See [docs/BETA.md](docs/BETA.md) for the smoke-test checklist and requests inbox
 
 ## Deployment (beta / production)
 
-### Overview
+Step-by-step **Render + Vercel** guide: [docs/DEPLOY.md](docs/DEPLOY.md)
 
-Typical split hosting:
-
-| Component | Suggestion |
-|-----------|------------|
-| Frontend | Vercel, Netlify, or Cloudflare Pages |
-| Backend | Render, Railway, or Fly.io |
-| Database | Managed Postgres (Neon, Supabase, Render, Railway) |
-
-### Backend
-
-1. Set environment variables (see `backend/.env.example`):
-
-   - `DJANGO_SECRET_KEY` — long random string
-   - `DEBUG=False`
-   - `ALLOWED_HOSTS=your-api.example.com`
-   - `CSRF_TRUSTED_ORIGINS=https://your-app.example.com`
-   - `CORS_ALLOWED_ORIGINS=https://your-app.example.com`
-   - `DB_*` or platform `DATABASE_URL` mapped to `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`
-
-2. Install and migrate:
-
-```bash
-cd backend
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py createsuperuser
-```
-
-3. Run with gunicorn (example):
-
-```bash
-gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
-```
-
-WhiteNoise serves Django admin static files when `DEBUG=False`.
-
-### Frontend
-
-1. Set `VITE_API_URL=https://your-api.example.com` in the host’s build environment.
-2. Build and deploy:
-
-```bash
-cd frontend
-npm install
-npm run build
-```
-
-Deploy the `frontend/dist/` folder. Configure SPA fallback to `index.html` for client-side routes.
-
-### Post-deploy checks
-
-- [ ] HTTPS on both frontend and API
-- [ ] Sign up / sign in works against production API
-- [ ] CORS errors absent in browser console
-- [ ] Django admin reachable at `/admin/`
-- [ ] Run through [docs/BETA.md](docs/BETA.md) smoke tests
+Optional Render Blueprint: `render.yaml` at repo root.
 
 ## Typical workflow
 
