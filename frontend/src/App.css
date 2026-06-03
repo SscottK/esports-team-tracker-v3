@@ -8,6 +8,11 @@
   --esports-glow: rgba(34, 211, 238, 0.08);
   --esports-text: #e5eef9;
   --esports-muted: #94a3b8;
+  --esports-input-bg: #0b1220;
+  --esports-surface: rgba(0, 0, 0, 0.22);
+  --esports-surface-strong: rgba(0, 0, 0, 0.35);
+  --esports-shadow: rgba(0, 0, 0, 0.22);
+  --esports-table-sticky: #0b1220;
 }
 
 html[data-color-mode='light'] {
@@ -15,6 +20,11 @@ html[data-color-mode='light'] {
   --esports-panel: #ffffff;
   --esports-text: #0f172a;
   --esports-muted: #64748b;
+  --esports-input-bg: #ffffff;
+  --esports-surface: rgba(15, 23, 42, 0.04);
+  --esports-surface-strong: rgba(15, 23, 42, 0.06);
+  --esports-shadow: rgba(15, 23, 42, 0.08);
+  --esports-table-sticky: #f8fafc;
 }
 
 body {
@@ -115,7 +125,7 @@ html[data-color-mode='light'] body {
   background: var(--esports-panel);
   border: 1px solid var(--esports-panel-border);
   border-radius: 1rem;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 12px 40px var(--esports-shadow);
   color: var(--esports-text);
 }
 
@@ -145,10 +155,18 @@ html[data-color-mode='light'] body {
   color: #bbf7d0;
 }
 
+html[data-color-mode='light'] .esports-page .alert-success {
+  color: #166534;
+}
+
 .esports-page .alert-danger {
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.3);
   color: #fecaca;
+}
+
+html[data-color-mode='light'] .esports-page .alert-danger {
+  color: #991b1b;
 }
 
 .esports-page .alert-warning {
@@ -157,8 +175,12 @@ html[data-color-mode='light'] body {
   color: #fde68a;
 }
 
+html[data-color-mode='light'] .esports-page .alert-warning {
+  color: #92400e;
+}
+
 .esports-page .alert-light {
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--esports-surface);
   border-color: rgba(148, 163, 184, 0.2);
   color: var(--esports-text);
 }
@@ -174,7 +196,7 @@ html[data-color-mode='light'] body {
 .esports-page .form-control,
 .esports-page .form-select,
 .dashboard-select {
-  background-color: #0b1220;
+  background-color: var(--esports-input-bg);
   border: 1px solid rgba(148, 163, 184, 0.25);
   color: var(--esports-text);
 }
@@ -182,9 +204,9 @@ html[data-color-mode='light'] body {
 .esports-page .form-control:focus,
 .esports-page .form-select:focus,
 .dashboard-select:focus {
-  background-color: #0b1220;
+  background-color: var(--esports-input-bg);
   border-color: var(--esports-accent);
-  box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.15);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--esports-accent) 15%, transparent);
   color: var(--esports-text);
 }
 
@@ -451,7 +473,7 @@ html[data-color-mode='light'] body {
   -webkit-overflow-scrolling: touch;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 0.75rem;
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--esports-surface);
 }
 
 .times-grid th,
@@ -463,7 +485,7 @@ html[data-color-mode='light'] body {
 }
 
 .times-grid thead th {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--esports-surface-strong);
   color: var(--esports-muted);
   font-size: 0.72rem;
   font-weight: 700;
@@ -475,7 +497,7 @@ html[data-color-mode='light'] body {
   position: sticky;
   left: 0;
   z-index: 2;
-  background: #0b1220;
+  background: var(--esports-table-sticky);
   min-width: 160px;
   text-align: center;
   vertical-align: middle;
@@ -524,7 +546,7 @@ html[data-color-mode='light'] body {
   min-width: 160px;
   text-align: center;
   vertical-align: middle;
-  background: #0b1220;
+  background: var(--esports-table-sticky);
 }
 
 .compare-better {
@@ -959,7 +981,7 @@ html[data-color-mode='light'] body {
   background: var(--esports-panel);
   border: 1px solid var(--esports-panel-border);
   border-radius: 1rem;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 12px 40px var(--esports-shadow);
 }
 
 .dashboard-hero-filters {
@@ -1136,7 +1158,7 @@ html[data-color-mode='light'] body {
   align-items: center;
   padding: 0.65rem 0.75rem;
   border-radius: 0.65rem;
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--esports-surface);
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -1342,7 +1364,7 @@ html[data-color-mode='light'] body {
 }
 
 .leaderboard-table thead th {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--esports-surface-strong);
   color: var(--esports-muted);
   font-size: 0.72rem;
   font-weight: 700;
@@ -1939,14 +1961,10 @@ html[data-color-mode='light'] body {
   padding: 0.65rem 0.75rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(0, 0, 0, 0.18);
+  background: var(--esports-surface);
   color: var(--esports-text);
   text-align: left;
   cursor: pointer;
-}
-
-html[data-color-mode='light'] .team-theme-option {
-  background: rgba(15, 23, 42, 0.03);
 }
 
 .team-theme-option:hover,
@@ -1968,30 +1986,61 @@ html[data-color-mode='light'] .team-theme-option {
   flex-shrink: 0;
 }
 
+html[data-color-mode='light'] .team-theme-swatch {
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
 .team-theme-label {
   font-size: 0.9rem;
   font-weight: 600;
-}
-
-html[data-color-mode='light'] .times-grid .sticky-col,
-html[data-color-mode='light'] .compare-table .sticky-col {
-  background: var(--esports-panel);
-}
-
-html[data-color-mode='light'] .grid-scroll-wrapper,
-html[data-color-mode='light'] .dashboard-time-row,
-html[data-color-mode='light'] .dashboard-history-row {
-  background: rgba(15, 23, 42, 0.03);
 }
 
 html[data-color-mode='light'] .esports-navbar {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 242, 247, 0.98)),
     var(--esports-bg);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px var(--esports-shadow);
+}
+
+html[data-color-mode='light'] .esports-offcanvas,
+html[data-color-mode='light'] .modal-content {
+  background: var(--esports-panel);
+  color: var(--esports-text);
+}
+
+html[data-color-mode='light'] .team-game-link,
+html[data-color-mode='light'] .form-page-picker-list .team-game-link {
+  background: var(--esports-surface);
+}
+
+html[data-color-mode='light'] .dashboard-toolbar,
+html[data-color-mode='light'] .dashboard-stat,
+html[data-color-mode='light'] .mobile-grid-card {
+  background: var(--esports-surface);
+}
+
+html[data-color-mode='light'] .auth-page-panel,
+html[data-color-mode='light'] .landing-panel {
+  box-shadow: 0 16px 48px var(--esports-shadow);
 }
 
 html[data-color-mode='light'] .btn-close {
   filter: none;
   opacity: 0.55;
+}
+
+html[data-color-mode='light'] .esports-page .btn-outline-danger {
+  color: #b91c1c;
+}
+
+html[data-color-mode='light'] .grid-cell-fast {
+  color: #166534 !important;
+}
+
+html[data-color-mode='light'] .grid-cell-medium {
+  color: #92400e !important;
+}
+
+html[data-color-mode='light'] .grid-cell-slow {
+  color: #991b1b !important;
 }

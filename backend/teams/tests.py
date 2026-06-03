@@ -281,3 +281,51 @@ class TeamMigrationTests(TestCase):
             format='json',
         )
         self.assertEqual(response.status_code, 400)
+
+
+class TeamColorThemeTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.org = Organization.objects.create(name='Theme Org')
+        OrgJoinCode.objects.create(organization=self.org)
+
+        self.head = User.objects.create_user(username='head', password='pass12345')
+        self.member = User.objects.create_user(username='member', password='pass12345')
+
+        OrgMembership.objects.create(user=self.head, organization=self.org, is_admin=True)
+        OrgMembership.objects.create(user=self.member, organization=self.org, is_admin=False)
+
+        self.team = Team.objects.create(organization=self.org, name='Theme Team')
+        TeamMembership.objects.create(
+            user=self.head,
+            team=self.team,
+            coach_role=CoachRole.HEAD,
+            is_competing_member=False,
+        )
+        TeamMembership.objects.create(
+            user=self.member,
+            team=self.team,
+            coach_role=CoachRole.NONE,
+            is_competing_member=True,
+        )
+
+    def test_head_coach_can_update_color_theme(self):
+        self.client.force_authenticate(user=self.head)
+        response = self.client.patch(
+            f'/api/teams/{self.team.id}/',
+            {'color_theme': 'emerald'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['color_theme'], 'emerald')
+        self.team.refresh_from_db()
+        self.assertEqual(self.team.color_theme, 'emerald')
+
+    def test_member_cannot_update_color_theme(self):
+        self.client.force_authenticate(user=self.member)
+        response = self.client.patch(
+            f'/api/teams/{self.team.id}/',
+            {'color_theme': 'violet'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 403)

@@ -88,11 +88,11 @@ class TeamViewSet(viewsets.ModelViewSet):
                 {'detail': 'Only color_theme can be updated.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().partial_update(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        kwargs['partial'] = False
-        return self.partial_update(request, *args, **kwargs)
+        serializer = self.get_serializer(team, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        team.refresh_from_db()
+        return Response(TeamSerializer(team, context=self.get_serializer_context()).data)
 
 
 class TeamMembershipView(APIView):
