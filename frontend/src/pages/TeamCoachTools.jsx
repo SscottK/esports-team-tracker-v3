@@ -259,6 +259,9 @@ export default function TeamCoachTools() {
   const uploadTimesPath = defaultUploadGameId
     ? `/teams/${teamId}/upload-times?game=${defaultUploadGameId}`
     : `/teams/${teamId}/upload-times`;
+  const timesGridPath = defaultUploadGameId
+    ? `/teams/${teamId}/games/${defaultUploadGameId}`
+    : null;
 
   const coachPageLinks = [
     { label: 'Set benchmarks', to: `/teams/${teamId}/benchmarks` },
@@ -277,6 +280,11 @@ export default function TeamCoachTools() {
       actions={(
         <div className="page-header-actions page-header-actions--compact">
           <PageLinksMenu label="More pages" links={coachPageLinks} />
+          {timesGridPath && (
+            <Button as={Link} to={timesGridPath} variant="outline-primary" size="sm">
+              Times grid
+            </Button>
+          )}
           <BackButton fallback={`/teams/${teamId}`} />
         </div>
       )}
