@@ -1,4 +1,6 @@
+import { useEffect, useMemo, useState } from 'react';
 import Badge from 'react-bootstrap/Badge';
+import Form from 'react-bootstrap/Form';
 import { activityLabel } from '../utils/gameLabels';
 
 const statusClass = {
@@ -72,43 +74,132 @@ export default function TimesGridTable({ grid }) {
   );
 }
 
-export function MobileGridCards({ grid }) {
-  const trackLabel = activityLabel(grid?.game, false);
+function trackOptionLabel(level) {
+  const parts = [level.name];
+  if (level.level_group) {
+    parts.push(level.level_group);
+  }
+  if (level.is_dlc) {
+    parts.push('DLC');
+  }
+  return parts.join(' · ');
+}
 
-  if (!grid?.levels?.length) return null;
+function MobileTrackTimesCard({ level, members }) {
+  return (
+    <div className="esports-panel mobile-grid-card mobile-grid-track-panel">
+      <h2 className="mobile-grid-card-title">{level.name}</h2>
+      {(level.level_group || level.is_dlc) && (
+        <p className="mobile-grid-card-meta d-flex align-items-center gap-2 flex-wrap">
+          {level.level_group && <span>{level.level_group}</span>}
+          {level.is_dlc && (
+            <Badge bg="secondary" className="grid-dlc-badge">DLC</Badge>
+          )}
+        </p>
+      )}
+      <div className="mobile-grid-card-benchmarks">
+        <span>Par 1: {level.benchmark.target_fast || '—'}</span>
+        <span>Par 2: {level.benchmark.target_slow || '—'}</span>
+        <span>Elite: {level.benchmark.elite || '—'}</span>
+      </div>
+      {members.map((member) => {
+        const cell = level.results[String(member.id)] || {};
+        return (
+          <div
+            key={member.id}
+            className={`mobile-grid-member-row ${statusClass[cell.status] || ''}`}
+          >
+            <span>{member.username}</span>
+            <span>{cell.display || '—'}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function MobileGridCards({ grid }) {
+  const [selectedLevelId, setSelectedLevelId] = useState('');
+  const [trackSearch, setTrackSearch] = useState('');
+
+  useEffect(() => {
+    setSelectedLevelId('');
+    setTrackSearch('');
+  }, [grid?.game?.id, grid?.levels]);
+
+  const filteredLevels = useMemo(() => {
+    if (!grid?.levels?.length) {
+      return [];
+    }
+    const query = trackSearch.trim().toLowerCase();
+    if (!query) {
+      return grid.levels;
+    }
+    return grid.levels.filter((level) => {
+      const haystack = [
+        level.name,
+        level.level_group,
+        level.is_dlc ? 'dlc' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [grid?.levels, trackSearch]);
+
+  const selectedLevel = useMemo(() => {
+    if (!selectedLevelId || !grid?.levels?.length) {
+      return null;
+    }
+    return grid.levels.find((level) => String(level.id) === String(selectedLevelId)) || null;
+  }, [grid?.levels, selectedLevelId]);
+
+  if (!grid?.levels?.length) {
+    return null;
+  }
 
   return (
     <div className="d-md-none mobile-grid-cards">
-      {grid.levels.map((level) => (
-        <div key={level.id} className="esports-panel mobile-grid-card">
-          <h2 className="mobile-grid-card-title">{level.name}</h2>
-          {(level.level_group || level.is_dlc) && (
-            <p className="mobile-grid-card-meta d-flex align-items-center gap-2 flex-wrap">
-              {level.level_group && <span>{level.level_group}</span>}
-              {level.is_dlc && (
-                <Badge bg="secondary" className="grid-dlc-badge">DLC</Badge>
-              )}
-            </p>
+      <div className="mobile-grid-picker esports-panel">
+        <Form.Group className="mb-3">
+          <Form.Label className="mobile-grid-picker-label">Search tracks</Form.Label>
+          <Form.Control
+            type="search"
+            value={trackSearch}
+            onChange={(event) => setTrackSearch(event.target.value)}
+            placeholder="Type to filter tracks..."
+            className="mobile-grid-track-search"
+            aria-label="Search tracks"
+          />
+        </Form.Group>
+        <Form.Group className="mb-0">
+          <Form.Label className="mobile-grid-picker-label">Select a track to see team times</Form.Label>
+          <Form.Select
+            value={selectedLevelId}
+            onChange={(event) => setSelectedLevelId(event.target.value)}
+            className="dashboard-select mobile-grid-track-select"
+          >
+            <option value="" disabled>
+              Select a track to see team times
+            </option>
+            {filteredLevels.map((level) => (
+              <option key={level.id} value={level.id}>
+                {trackOptionLabel(level)}
+              </option>
+            ))}
+          </Form.Select>
+          {trackSearch.trim() && filteredLevels.length === 0 && (
+            <p className="mobile-grid-picker-empty mb-0 mt-2">No tracks match your search.</p>
           )}
-          <div className="mobile-grid-card-benchmarks">
-            <span>Par 1: {level.benchmark.target_fast || '—'}</span>
-            <span>Par 2: {level.benchmark.target_slow || '—'}</span>
-            <span>Elite: {level.benchmark.elite || '—'}</span>
-          </div>
-          {grid.members.map((member) => {
-            const cell = level.results[String(member.id)] || {};
-            return (
-              <div
-                key={member.id}
-                className={`mobile-grid-member-row ${statusClass[cell.status] || ''}`}
-              >
-                <span>{member.username}</span>
-                <span>{cell.display || '—'}</span>
-              </div>
-            );
-          })}
-        </div>
-      ))}
+        </Form.Group>
+      </div>
+
+      {selectedLevel ? (
+        <MobileTrackTimesCard level={selectedLevel} members={grid.members} />
+      ) : (
+        <p className="mobile-grid-picker-hint mb-0">Select a track to see team times.</p>
+      )}
     </div>
   );
 }

@@ -1605,6 +1605,37 @@ html[data-color-mode='light'] .server-wake-overlay {
   margin-top: 0.85rem;
 }
 
+.mobile-grid-picker {
+  padding: 0.95rem 1rem;
+}
+
+.mobile-grid-picker-label {
+  margin-bottom: 0.35rem;
+  color: var(--esports-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mobile-grid-track-search {
+  margin-bottom: 0;
+}
+
+.mobile-grid-track-select option[disabled] {
+  color: var(--esports-muted);
+}
+
+.mobile-grid-picker-empty,
+.mobile-grid-picker-hint {
+  color: var(--esports-muted);
+  font-size: 0.85rem;
+}
+
+.mobile-grid-track-panel {
+  margin-top: 0;
+}
+
 .mobile-grid-card {
   padding: 0.95rem 1rem;
 }
