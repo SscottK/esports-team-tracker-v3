@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
-import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
+import BackButton from '../components/BackButton';
 import { useAuth } from '../context/AuthContext';
 
 const initialForm = {
@@ -48,61 +48,67 @@ export default function SignUp() {
   };
 
   return (
-    <Container style={{ maxWidth: '480px' }}>
-      <Card>
-        <Card.Body>
-          <Card.Title>Create account</Card.Title>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="username">
-              <Form.Label>Username</Form.Label>
-              <Form.Control
-                name="username"
-                value={form.username}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="email">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="password">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                minLength={8}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="password_confirm">
-              <Form.Label>Confirm password</Form.Label>
-              <Form.Control
-                type="password"
-                name="password_confirm"
-                value={form.password_confirm}
-                onChange={handleChange}
-                minLength={8}
-                required
-              />
-            </Form.Group>
-            <Button type="submit" variant="primary" disabled={submitting}>
-              {submitting ? 'Creating account...' : 'Sign up'}
-            </Button>
-          </Form>
-          <p className="mt-3 mb-0">
-            Already have an account? <Link to="/signin">Sign in</Link>
-          </p>
-        </Card.Body>
-      </Card>
+    <Container className="auth-shell esports-page" style={{ maxWidth: '480px' }}>
+      <div className="auth-form-header mb-3">
+        <BackButton fallback="/" label="Home" />
+      </div>
+      <section className="esports-panel form-page-panel auth-form-panel">
+        <p className="dashboard-eyebrow mb-2">Get started</p>
+        <h1 className="coach-tools-section-title mb-3">Create account</h1>
+        {error && <Alert variant="danger">{error}</Alert>}
+        <Form onSubmit={handleSubmit} className="coach-tools-form">
+          <Form.Group>
+            <Form.Label>Username</Form.Label>
+            <Form.Control
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              autoComplete="username"
+              required
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              autoComplete="email"
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              autoComplete="new-password"
+              minLength={8}
+              required
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Confirm password</Form.Label>
+            <Form.Control
+              type="password"
+              name="password_confirm"
+              value={form.password_confirm}
+              onChange={handleChange}
+              autoComplete="new-password"
+              minLength={8}
+              required
+            />
+          </Form.Group>
+          <Button type="submit" variant="outline-primary" disabled={submitting}>
+            {submitting ? 'Creating account...' : 'Sign up'}
+          </Button>
+        </Form>
+      </section>
+      <p className="auth-footer-text mt-3 mb-0">
+        Already have an account? <Link to="/signin">Sign in</Link>
+      </p>
     </Container>
   );
 }

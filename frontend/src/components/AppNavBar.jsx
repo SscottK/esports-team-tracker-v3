@@ -1,45 +1,206 @@
+import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import Container from 'react-bootstrap/Container';
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
+import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import Offcanvas from 'react-bootstrap/Offcanvas';
 import { useAuth } from '../context/AuthContext';
+import { useNav } from '../context/NavContext';
+
+function FlyoutTrigger({ label, isOpen, onOpen }) {
+  return (
+    <button
+      type="button"
+      className={`nav-flyout-trigger${isOpen ? ' is-open' : ''}`}
+      onClick={onOpen}
+      aria-expanded={isOpen}
+    >
+      <span>{label}</span>
+      <span className="nav-flyout-arrow" aria-hidden="true">›</span>
+    </button>
+  );
+}
 
 export default function AppNavBar() {
   const { user, logout } = useAuth();
+  const { organizations, teams, pendingCount } = useNav();
+  const [showMenu, setShowMenu] = useState(false);
+  const [openFlyout, setOpenFlyout] = useState(null);
+
+  const closeMenu = () => {
+    setShowMenu(false);
+    setOpenFlyout(null);
+  };
+
+  const handleFlyoutOpen = (flyout) => {
+    setOpenFlyout((current) => (current === flyout ? null : flyout));
+  };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="md" className="mb-4">
-      <Container>
-        <Navbar.Brand as={Link} to="/">
-          Esports Team Tracker
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="main-nav" />
-        <Navbar.Collapse id="main-nav">
-          <Nav className="ms-auto align-items-md-center gap-md-2">
-            {user ? (
-              <>
-                <Nav.Link as={NavLink} to="/dashboard">
-                  Dashboard
-                </Nav.Link>
-                <Navbar.Text className="text-light">{user.username}</Navbar.Text>
-                <Button variant="outline-light" size="sm" onClick={logout}>
-                  Sign out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Nav.Link as={NavLink} to="/signin">
-                  Sign in
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="/signup">
-                  Sign up
-                </Nav.Link>
-              </>
-            )}
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+    <>
+      <Navbar expand={false} className="app-navbar esports-navbar">
+        <Container fluid className="px-3 px-md-4 app-navbar-inner">
+          {user && (
+            <Button
+              variant="outline-light"
+              size="sm"
+              className="nav-hamburger-btn me-2"
+              onClick={() => setShowMenu(true)}
+              aria-label="Open menu"
+            >
+              ☰
+            </Button>
+          )}
+
+          <Navbar.Brand as={Link} to={user ? '/dashboard' : '/'} className="me-auto">
+            Esports Team Tracker
+          </Navbar.Brand>
+
+          {user && (
+            <NavLink
+              to="/requests"
+              className="nav-requests-btn position-relative"
+              aria-label={`Requests${pendingCount ? `, ${pendingCount} pending` : ''}`}
+            >
+              <span className="nav-requests-icon" aria-hidden="true">🔔</span>
+              {pendingCount > 0 && (
+                <Badge
+                  bg="danger"
+                  pill
+                  className="nav-requests-badge"
+                >
+                  {pendingCount > 99 ? '99+' : pendingCount}
+                </Badge>
+              )}
+            </NavLink>
+          )}
+
+          {!user && (
+            <Nav className="ms-auto align-items-center gap-2">
+              <Nav.Link as={NavLink} to="/signin">Sign in</Nav.Link>
+              <Nav.Link as={NavLink} to="/signup">Sign up</Nav.Link>
+            </Nav>
+          )}
+        </Container>
+      </Navbar>
+
+      {user && (
+        <Offcanvas
+          show={showMenu}
+          onHide={closeMenu}
+          placement="start"
+          className={`app-nav-offcanvas esports-offcanvas${openFlyout ? ' nav-flyout-open' : ''}`}
+        >
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>Menu</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body className="app-nav-offcanvas-body">
+            <div className="nav-offcanvas-layout">
+              <div className="nav-offcanvas-main d-flex flex-column gap-3">
+                <div className="text-muted small">{user.username}</div>
+
+                <Nav className="flex-column nav-menu-links">
+                  <Nav.Link as={NavLink} to="/dashboard" onClick={closeMenu}>
+                    Dashboard
+                  </Nav.Link>
+                </Nav>
+
+                <div className="nav-flyout-list">
+                  <FlyoutTrigger
+                    label="Organizations"
+                    isOpen={openFlyout === 'organizations'}
+                    onOpen={() => handleFlyoutOpen('organizations')}
+                  />
+                  <FlyoutTrigger
+                    label="Teams"
+                    isOpen={openFlyout === 'teams'}
+                    onOpen={() => handleFlyoutOpen('teams')}
+                  />
+                </div>
+
+                <Nav className="flex-column nav-menu-links">
+                  <Nav.Link as={NavLink} to="/add-time" onClick={closeMenu}>
+                    Add time
+                  </Nav.Link>
+                  <Nav.Link as={NavLink} to="/suggest-game" onClick={closeMenu}>
+                    Suggest a game
+                  </Nav.Link>
+                  {user.is_staff && (
+                    <Nav.Link as={NavLink} to="/admin/game-suggestions" onClick={closeMenu}>
+                      Game suggestions
+                    </Nav.Link>
+                  )}
+                </Nav>
+
+                <div className="mt-auto pt-3 border-top">
+                  <Button variant="outline-secondary" className="w-100" onClick={() => { closeMenu(); logout(); }}>
+                    Sign out
+                  </Button>
+                </div>
+              </div>
+
+              {openFlyout === 'organizations' && (
+                <div className="nav-flyout-panel" role="region" aria-label="Organizations submenu">
+                  <div className="nav-flyout-panel-header">Organizations</div>
+                  <div className="nav-flyout-panel-body">
+                    <Nav.Link
+                      as={NavLink}
+                      to="/join-organization"
+                      onClick={closeMenu}
+                      className="nav-submenu-link nav-submenu-link-action"
+                    >
+                      Create or join organization
+                    </Nav.Link>
+                    {organizations.length === 0 ? (
+                      <p className="text-muted small mb-0 px-3 py-2">No organizations yet.</p>
+                    ) : (
+                      organizations.map((org) => (
+                        <Nav.Link
+                          key={org.id}
+                          as={NavLink}
+                          to={`/organizations/${org.id}`}
+                          onClick={closeMenu}
+                          className="nav-submenu-link"
+                        >
+                          {org.name}
+                          {org.is_org_leader && (
+                            <Badge bg="primary" className="ms-2">Leader</Badge>
+                          )}
+                        </Nav.Link>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {openFlyout === 'teams' && (
+                <div className="nav-flyout-panel" role="region" aria-label="Teams submenu">
+                  <div className="nav-flyout-panel-header">Teams</div>
+                  <div className="nav-flyout-panel-body">
+                    {teams.length === 0 ? (
+                      <p className="text-muted small mb-0 px-3 py-2">No teams yet.</p>
+                    ) : (
+                      teams.map((team) => (
+                        <Nav.Link
+                          key={team.id}
+                          as={NavLink}
+                          to={`/teams/${team.id}`}
+                          onClick={closeMenu}
+                          className="nav-submenu-link"
+                        >
+                          {team.name}
+                        </Nav.Link>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Offcanvas.Body>
+        </Offcanvas>
+      )}
+    </>
   );
 }

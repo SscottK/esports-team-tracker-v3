@@ -1,0 +1,15 @@
+---
+description: Remind to commit and push to GitHub about hourly during active project work
+alwaysApply: true
+---
+
+# GitHub push cadence
+
+While the user is actively working on this project in a session:
+
+- About once per hour of sustained implementation (or before ending a long session), remind them to commit and push to GitHub if there are unpushed changes.
+- Keep the reminder brief: check `git status`, commit meaningful chunks, push to `origin`.
+- Do not commit or push unless the user asks; only remind.
+- Never commit `.env` files or other secrets.
+
+Remote: `https://github.com/SscottK/esports-team-tracker-v3.git` on branch `main`.
