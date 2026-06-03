@@ -11,3 +11,8 @@ export const reviewPasswordResetRequest = async (requestId, payload) => {
   const response = await apiClient.patch(`/admin/password-reset-requests/${requestId}/`, payload);
   return response.data;
 };
+
+export const getBetaFeedback = async () => {
+  const response = await apiClient.get('/admin/beta-feedback/');
+  return response.data;
+};

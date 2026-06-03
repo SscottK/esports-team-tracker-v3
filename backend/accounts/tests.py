@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from accounts.models import PasswordResetRequest, PasswordResetRequestStatus
+from accounts.models import PasswordResetRequest, PasswordResetRequestStatus, BetaFeedback
 
 User = get_user_model()
 
@@ -85,3 +85,55 @@ class PasswordResetRequestTests(TestCase):
         reset_request.refresh_from_db()
         self.assertEqual(reset_request.status, PasswordResetRequestStatus.COMPLETED)
         self.assertEqual(reset_request.reviewed_by_id, self.admin.id)
+
+
+class BetaFeedbackTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username='player',
+            email='player@example.com',
+            password='pass12345',
+        )
+        self.admin = User.objects.create_user(
+            username='admin',
+            email='admin@example.com',
+            password='pass12345',
+            is_staff=True,
+        )
+
+    def test_authenticated_user_can_submit_feedback(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            '/api/feedback/',
+            {'message': 'Love the times grid.', 'page_url': '/teams/1/games/2'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(BetaFeedback.objects.count(), 1)
+        self.assertEqual(response.data['username'], 'player')
+
+    def test_anonymous_user_cannot_submit_feedback(self):
+        response = self.client.post(
+            '/api/feedback/',
+            {'message': 'Hello'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_staff_can_list_feedback(self):
+        BetaFeedback.objects.create(
+            user=self.user,
+            message='Needs dark mode tweaks.',
+            page_url='/dashboard',
+        )
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/admin/beta-feedback/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['message'], 'Needs dark mode tweaks.')
+
+    def test_non_staff_cannot_list_feedback(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get('/api/admin/beta-feedback/')
+        self.assertEqual(response.status_code, 403)

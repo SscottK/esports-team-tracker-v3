@@ -1,7 +1,14 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from accounts.models import PasswordResetRequest, PasswordResetRequestStatus
+from accounts.models import BetaFeedback, PasswordResetRequest, PasswordResetRequestStatus
+
+
+@admin.register(BetaFeedback)
+class BetaFeedbackAdmin(admin.ModelAdmin):
+    list_display = ('user', 'page_url', 'created_at')
+    search_fields = ('user__username', 'message', 'page_url')
+    readonly_fields = ('user', 'message', 'page_url', 'created_at')
 
 
 @admin.register(PasswordResetRequest)

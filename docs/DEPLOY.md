@@ -1,32 +1,41 @@
 # Deploy v3 — Render (API) + Vercel (frontend)
 
-Use this walkthrough if you already deploy with Render + Vercel (same pattern as v2).
+Production deployment for this repo.
 
-Replace placeholder URLs with your real Vercel and Render URLs.
+## Live URLs
+
+| Piece | URL |
+|-------|-----|
+| **App (Vercel)** | [https://esports-team-tracker.vercel.app](https://esports-team-tracker.vercel.app) |
+| **API (Render)** | [https://esports-team-tracker-v3-api.onrender.com](https://esports-team-tracker-v3-api.onrender.com) |
+| **Django admin** | [https://esports-team-tracker-v3-api.onrender.com/admin/](https://esports-team-tracker-v3-api.onrender.com/admin/) |
+
+Repo: `SscottK/esports-team-tracker-v3`, branch `main` (auto-deploy on push).
+
+---
 
 ## Overview
 
-| Piece | Host | URL (example) |
+| Piece | Host | Root directory |
 |-------|------|----------------|
-| React app | Vercel | `https://your-app.vercel.app` |
-| Django API | Render | `https://your-api.onrender.com` |
+| React app | Vercel | `frontend` |
+| Django API | Render | `backend` |
 | Postgres | Render | linked to web service |
 
 ---
 
 ## Part 1 — Render (backend + database)
 
-### 1. Postgres (if you need a new DB for v3)
+### 1. Postgres
 
 1. [Render Dashboard](https://dashboard.render.com) → **New +** → **PostgreSQL**
-2. Name: `esports-team-tracker-v3-db` (or reuse an existing DB if you prefer)
-3. Create → copy **Internal Database URL** (for same-region services) or **External** for local migrations
+2. Name: e.g. `esports-team-tracker-v3-db`
+3. Copy **Internal Database URL** for the web service in the same region
 
 ### 2. Web service (Django API)
 
-1. **New +** → **Web Service**
-2. Connect repo: `SscottK/esports-team-tracker-v3`, branch `main`
-3. Settings:
+1. **New +** → **Web Service** → connect `SscottK/esports-team-tracker-v3`
+2. Settings:
 
 | Field | Value |
 |-------|--------|
@@ -35,46 +44,37 @@ Replace placeholder URLs with your real Vercel and Render URLs.
 | **Build Command** | `./build.sh` |
 | **Start Command** | `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
 
-4. **Environment** (minimum):
+3. **Environment** (production example):
 
 | Key | Value |
 |-----|--------|
 | `DEBUG` | `False` |
-| `DJANGO_SECRET_KEY` | long random string (Generate in Render) |
-| `DATABASE_URL` | Paste **Internal Database URL** from the Postgres service → **Connect** tab (full `postgresql://…` string). If you added the key with no value, delete it or paste the URL — an empty `DATABASE_URL` breaks the build. |
-| `ALLOWED_HOSTS` | `your-api.onrender.com` |
-| `CORS_ALLOWED_ORIGINS` | `https://your-app.vercel.app` |
-| `CSRF_TRUSTED_ORIGINS` | `https://your-app.vercel.app` |
+| `DJANGO_SECRET_KEY` | long random string |
+| `DATABASE_URL` | Internal Postgres URL (must not be blank) |
+| `ALLOWED_HOSTS` | `esports-team-tracker-v3-api.onrender.com` |
+| `CORS_ALLOWED_ORIGINS` | `https://esports-team-tracker.vercel.app` |
+| `CSRF_TRUSTED_ORIGINS` | `https://esports-team-tracker.vercel.app` |
 | `SECURE_SSL_REDIRECT` | `True` |
 
-5. Deploy → wait for build (migrate + collectstatic run in `build.sh`)
+4. Deploy — `build.sh` runs migrations and collectstatic
 
-### 3. First-time data (Shell on Render)
-
-Open the web service → **Shell**:
+### 3. First-time data (Render Shell)
 
 ```bash
 python manage.py createsuperuser
 python manage.py seed_mario_kart
-# optional demo data after you have a team locally or via app
 ```
 
 ### 4. Smoke test API
 
 ```bash
-curl https://your-api.onrender.com/api/catalog/games/
-# Expect 401 without auth — good sign the service is up
+curl https://esports-team-tracker-v3-api.onrender.com/api/health/
+# {"status":"ok"}
 ```
 
 ---
 
 ## Part 2 — Vercel (frontend)
-
-### 1. Import project
-
-1. [Vercel Dashboard](https://vercel.com) → **Add New…** → **Project**
-2. Import `SscottK/esports-team-tracker-v3`
-3. Settings:
 
 | Field | Value |
 |-------|--------|
@@ -83,47 +83,25 @@ curl https://your-api.onrender.com/api/catalog/games/
 | **Build Command** | `npm run build` |
 | **Output Directory** | `dist` |
 
-### 2. Environment variable
+**Environment:**
 
 | Key | Value |
 |-----|--------|
-| `VITE_API_URL` | `https://your-api.onrender.com` (no trailing slash) |
+| `VITE_API_URL` | `https://esports-team-tracker-v3-api.onrender.com` (no trailing slash) |
 
-Redeploy after setting env vars (Vite bakes `VITE_*` at build time).
+Redeploy after changing `VITE_*` (baked at build time).
 
-### 3. SPA routing
-
-`frontend/vercel.json` rewrites all routes to `index.html` for React Router.
+`frontend/vercel.json` rewrites routes to `index.html` for React Router.
 
 ---
 
-## Part 3 — Wire URLs together
+## Part 3 — Verify end-to-end
 
-After Vercel gives you a production URL:
+Use [BETA.md](./BETA.md). Minimum:
 
-1. Update Render **CORS_ALLOWED_ORIGINS** and **CSRF_TRUSTED_ORIGINS** with the exact Vercel URL (`https://…`, no trailing slash)
-2. Redeploy Render if you changed env vars
-3. Redeploy Vercel if you changed `VITE_API_URL`
-
----
-
-## Part 4 — Verify end-to-end
-
-Use [BETA.md](./BETA.md) smoke checklist. Minimum:
-
-- [ ] Sign up / sign in on Vercel URL
-- [ ] Dashboard loads teams
+- [ ] Sign up / sign in on [esports-team-tracker.vercel.app](https://esports-team-tracker.vercel.app)
 - [ ] No CORS errors in browser devtools → Network
-- [ ] Django admin: `https://your-api.onrender.com/admin/`
-
----
-
-## Updating an existing v2 deployment
-
-If your Render/Vercel services still point at **v2**:
-
-- **Option A:** Create new Render + Vercel projects for v3 (recommended for beta)
-- **Option B:** Point existing services at `esports-team-tracker-v3` repo and update root directory / env (downtime risk — use a new Postgres DB for v3)
+- [ ] Cold-start overlay appears after API idle, then app loads
 
 ---
 
@@ -150,7 +128,9 @@ VITE_API_URL=http://127.0.0.1:8000 npm run build && npm run preview
 | Symptom | Fix |
 |---------|-----|
 | CORS error in browser | `CORS_ALLOWED_ORIGINS` must exactly match Vercel origin |
-| 400 Bad Request on POST | Add Vercel URL to `CSRF_TRUSTED_ORIGINS` (admin/forms); JWT API usually fine |
+| 400 Bad Request on POST | Add Vercel URL to `CSRF_TRUSTED_ORIGINS` |
 | Blank page on refresh | Ensure `vercel.json` rewrites exist |
-| 502 on Render | Check logs; often migrate failed or wrong `rootDir` |
+| 502 on Render | Check logs; often migrate failed or wrong root directory |
 | API calls go to localhost | Rebuild Vercel after setting `VITE_API_URL` |
+| Empty DATABASE_URL on Render | Delete blank var or paste full Postgres URL |
+| Slow first request | Render starter spin-down; frontend shows wake overlay and retries |

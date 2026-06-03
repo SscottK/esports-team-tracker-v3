@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from accounts.models import PasswordResetRequest
+from accounts.models import BetaFeedback, PasswordResetRequest
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -70,3 +70,17 @@ class AdminPasswordResetRequestSerializer(serializers.ModelSerializer):
 
     def get_django_admin_user_url(self, obj):
         return f'/admin/auth/user/{obj.user_id}/change/'
+
+
+class CreateBetaFeedbackSerializer(serializers.Serializer):
+    message = serializers.CharField(min_length=1, max_length=5000)
+    page_url = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
+
+class AdminBetaFeedbackSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+
+    class Meta:
+        model = BetaFeedback
+        fields = ['id', 'user_id', 'username', 'message', 'page_url', 'created_at']

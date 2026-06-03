@@ -38,3 +38,20 @@ class PasswordResetRequest(models.Model):
 
     def __str__(self):
         return f'{self.username} password reset ({self.status})'
+
+
+class BetaFeedback(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='beta_feedback',
+    )
+    message = models.TextField()
+    page_url = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Beta feedback from {self.user.username}'

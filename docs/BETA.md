@@ -1,54 +1,75 @@
 # Beta testing guide
 
-Use this checklist before inviting coaches and org leaders to a hosted beta.
+Use this checklist before inviting coaches and org leaders to the hosted beta.
+
+**Live app:** [https://esports-team-tracker.vercel.app](https://esports-team-tracker.vercel.app)  
+**API:** [https://esports-team-tracker-v3-api.onrender.com](https://esports-team-tracker-v3-api.onrender.com)
+
+Deploy details: [DEPLOY.md](./DEPLOY.md) · Future work: [ROADMAP.md](./ROADMAP.md)
 
 ## Known beta scope
 
 - Mario Kart 8 Deluxe is the primary seeded game (base + DLC tracks).
-- Platform admins manage the catalog via Django admin (`/admin/`).
+- Platform admins manage the catalog via Django admin (`/admin/`) or in-app **Game suggestions**, **Password reset requests**, and **Beta feedback** (staff menu).
 - Times are per team; the same user on two teams has separate histories.
+- Every team member is a **real user account** — roster is not display-only names.
+- Render **starter** tier may sleep the API; first load can take up to ~1 minute (startup overlay + retry).
 
 ## Requests inbox coverage
 
-The bell badge and `/requests` inbox should surface all reviewable request types:
+The bell badge and `/requests` inbox use three tabs: **Pending**, **Sent**, and **Reviewed**.
 
-| Type | Who sees it | Action |
-|------|-------------|--------|
-| Organization join | Org leader | Approve / Deny |
-| Team join | Team coach | Approve / Deny |
-| Team move (outgoing) | Source org leader | Approve / Deny |
-| Team move (incoming) | Target org leader | Approve / Deny |
+`pending_count` in the nav counts **incoming** items only (not Sent).
 
-Pending count in the nav comes from `GET /api/requests/inbox/` → `pending_count`.
+| Type | Pending (incoming) | Sent (outgoing) | Who acts |
+|------|-------------------|-----------------|----------|
+| Organization join | Org leader | Requester | Approve / Deny or Cancel |
+| Team join | Team coach | Requester | Approve / Deny or Cancel |
+| Team invite | Invitee | Head coach (sender) | Accept / Decline or Cancel |
+| Team move (outgoing) | Source org leader | Head coach (requester) | Approve / Deny or Cancel |
+| Team move (incoming) | Target org leader | Head coach (requester) | Approve / Deny |
+| Password reset | — | Requester | Staff handles in admin; user sees status in Sent |
+
+Team invite accept rules: user not in any org → join org + team; same org → team only; **different org → must leave current org first**, then accept.
 
 ## Smoke test checklist
 
 ### Auth & nav
 - [ ] Sign up, sign in, sign out
-- [ ] Hamburger menu: organizations flyout, teams flyout, add time, suggest game
-- [ ] Notification bell shows pending count and links to `/requests`
+- [ ] Forgot password → request appears in Sent; staff can handle via admin
+- [ ] Hamburger menu: organizations, teams, add time, suggest game
+- [ ] Staff menu: game suggestions, password reset requests, beta feedback (if `is_staff`)
+- [ ] Notification bell → `/requests`
+- [ ] Dark / light mode toggle in header
+
+### Cold start (Render starter)
+- [ ] After idle period, first visit shows “Powering up the server” overlay
+- [ ] App recovers without manual refresh once API is up
 
 ### Organization flow
 - [ ] Create organization (Leader tools: join code, create team)
-- [ ] Join organization with code (second user) → leader approves in Requests inbox
+- [ ] Join organization with code (second user) → leader approves in Requests → Pending
 - [ ] Org detail: teams list, join team request, leave org (non-leader)
 
 ### Team flow
-- [ ] Create team, assign game, add roster members (Coach tools)
+- [ ] Create team, assign game, add roster by username (user must exist + be in org)
+- [ ] Head coach: **Invite to team** in Coach tools; invitee accepts in Pending; sender sees in **Sent**
+- [ ] Head coach: **Team colors** page from Coach tools
 - [ ] Head coach: inline roster role + Competes toggles on team page
-- [ ] Request to join team (org member) → coach approves in Requests inbox
+- [ ] Request to join team (org member) → coach approves in Pending
 
 ### Times
-- [ ] Set benchmarks (Coach tools → Set benchmarks)
+- [ ] Set benchmarks (Coach tools → More pages → Set benchmarks)
 - [ ] Add time (member + coach for another member)
-- [ ] Upload CSV (coach)
-- [ ] Times grid: color coding, DLC toggle, compare (3 members)
+- [ ] Upload CSV (coach) — times only; usernames must already be on roster
+- [ ] Times grid: color coding, toggles on Tracks times row, leaderboard accordion, compare
+- [ ] Coach tools / grid: **Times grid** shortcut back to grid
 - [ ] Time history filters (coach + member)
 
 ### Handoff & migration
 - [ ] Head coach leave with successor; assistant coach leave
 - [ ] Org leader leave with successor
-- [ ] Team migration: head coach requests move → both org leaders approve in Requests inbox
+- [ ] Team migration: head coach requests move → both org leaders approve
 
 ### Multi-team / multi-org
 - [ ] User in two orgs: both appear in nav
@@ -56,9 +77,9 @@ Pending count in the nav comes from `GET /api/requests/inbox/` → `pending_coun
 
 ### Mobile (phone width)
 - [ ] Hamburger nav usable
-- [ ] Times grid horizontal scroll
-- [ ] Coach tools header buttons wrap
-- [ ] Requests inbox Pending / Reviewed tabs
+- [ ] Times grid horizontal scroll / mobile cards
+- [ ] Coach tools / grid: More pages menu + key buttons on one row
+- [ ] Requests inbox: Pending / Sent / Reviewed tabs
 
 ## Beta feedback to collect
 
@@ -66,7 +87,10 @@ Pending count in the nav comes from `GET /api/requests/inbox/` → `pending_coun
 - Permission errors that should be clearer
 - Layout breaks at your common screen size
 - Missing request types in the inbox
+- Pages that need a first-visit hint (see [ROADMAP.md](./ROADMAP.md))
 
 ## Reporting issues
 
-Note: username, page URL, what you clicked, expected vs actual, and screenshot if possible.
+Signed-in testers can use **Send beta feedback** in the page footer (`Beta v0.1.0`) or go to `/feedback`. Staff review submissions at `/admin/beta-feedback`.
+
+Also note when reporting elsewhere: username, page URL, what you clicked, expected vs actual, and screenshot if possible.

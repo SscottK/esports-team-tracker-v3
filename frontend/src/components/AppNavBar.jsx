@@ -165,6 +165,9 @@ export default function AppNavBar() {
                       <Nav.Link as={NavLink} to="/admin/password-reset-requests" onClick={closeMenu}>
                         Password reset requests
                       </Nav.Link>
+                      <Nav.Link as={NavLink} to="/admin/beta-feedback" onClick={closeMenu}>
+                        Beta feedback
+                      </Nav.Link>
                     </>
                   )}
                 </Nav>

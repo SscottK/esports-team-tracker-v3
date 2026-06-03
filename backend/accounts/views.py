@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import PasswordResetRequest, PasswordResetRequestStatus
+from accounts.models import BetaFeedback, PasswordResetRequest, PasswordResetRequestStatus
 from accounts.services.password_reset_requests import (
     PasswordResetRequestError,
     create_password_reset_request,
@@ -12,7 +12,9 @@ from accounts.services.password_reset_requests import (
 )
 from performances.permissions import IsPlatformAdmin
 from .serializers import (
+    AdminBetaFeedbackSerializer,
     AdminPasswordResetRequestSerializer,
+    CreateBetaFeedbackSerializer,
     CreatePasswordResetRequestSerializer,
     RegisterSerializer,
     ReviewPasswordResetRequestSerializer,
@@ -101,3 +103,25 @@ class AdminPasswordResetRequestDetailView(APIView):
         except PasswordResetRequestError as exc:
             return Response({'detail': exc.message}, status=exc.status_code)
         return Response(AdminPasswordResetRequestSerializer(reset_request).data)
+
+
+class BetaFeedbackCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CreateBetaFeedbackSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        feedback = BetaFeedback.objects.create(
+            user=request.user,
+            message=serializer.validated_data['message'],
+            page_url=serializer.validated_data.get('page_url', ''),
+        )
+        return Response(AdminBetaFeedbackSerializer(feedback).data, status=status.HTTP_201_CREATED)
+
+
+class AdminBetaFeedbackView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def get(self, request):
+        queryset = BetaFeedback.objects.select_related('user')
+        return Response(AdminBetaFeedbackSerializer(queryset, many=True).data)
