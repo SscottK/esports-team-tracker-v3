@@ -2104,6 +2104,53 @@ html[data-color-mode='light'] .server-wake-overlay {
   gap: 0.45rem;
 }
 
+.admin-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.admin-queue-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--esports-text);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-queue-link:hover,
+.admin-queue-link:focus-visible {
+  color: var(--esports-text);
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.admin-queue-link-pending {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.admin-queue-link-label {
+  font-weight: 700;
+}
+
+.admin-queue-link-badge {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+}
+
+.admin-queue-link-status {
+  flex-shrink: 0;
+  color: var(--esports-muted);
+  font-size: 0.82rem;
+}
+
 .inbox-count-badge {
   font-size: 0.72rem;
 }
@@ -2262,7 +2309,8 @@ html[data-color-mode='light'] .modal-content {
 }
 
 html[data-color-mode='light'] .team-game-link,
-html[data-color-mode='light'] .form-page-picker-list .team-game-link {
+html[data-color-mode='light'] .form-page-picker-list .team-game-link,
+html[data-color-mode='light'] .admin-queue-link {
   background: var(--esports-surface);
 }
 

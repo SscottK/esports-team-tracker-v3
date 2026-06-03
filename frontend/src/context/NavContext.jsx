@@ -14,12 +14,19 @@ import * as requestsApi from '../api/requests';
 
 const NavContext = createContext(null);
 
+const EMPTY_ADMIN_COUNTS = {
+  beta_feedback: 0,
+  password_reset_requests: 0,
+  game_suggestions: 0,
+  total: 0,
+};
+
 export function NavProvider({ children }) {
   const { user } = useAuth();
   const [organizations, setOrganizations] = useState([]);
   const [teams, setTeams] = useState([]);
   const [pendingCount, setPendingCount] = useState(0);
-  const [adminPendingCount, setAdminPendingCount] = useState(0);
+  const [adminPendingCounts, setAdminPendingCounts] = useState(EMPTY_ADMIN_COUNTS);
   const [loading, setLoading] = useState(false);
 
   const refreshNav = useCallback(async () => {
@@ -27,7 +34,7 @@ export function NavProvider({ children }) {
       setOrganizations([]);
       setTeams([]);
       setPendingCount(0);
-      setAdminPendingCount(0);
+      setAdminPendingCounts(EMPTY_ADMIN_COUNTS);
       return;
     }
 
@@ -39,7 +46,7 @@ export function NavProvider({ children }) {
         requestsApi.getRequestInbox().catch(() => ({ pending_count: 0 })),
       ];
       if (user.is_staff) {
-        requests.push(adminApi.getAdminPendingCounts().catch(() => ({ total: 0 })));
+        requests.push(adminApi.getAdminPendingCounts().catch(() => EMPTY_ADMIN_COUNTS));
       }
 
       const results = await Promise.all(requests);
@@ -53,9 +60,14 @@ export function NavProvider({ children }) {
 
       if (user.is_staff) {
         const adminCounts = results[3];
-        setAdminPendingCount(adminCounts?.total || 0);
+        setAdminPendingCounts({
+          beta_feedback: adminCounts?.beta_feedback || 0,
+          password_reset_requests: adminCounts?.password_reset_requests || 0,
+          game_suggestions: adminCounts?.game_suggestions || 0,
+          total: adminCounts?.total || 0,
+        });
       } else {
-        setAdminPendingCount(0);
+        setAdminPendingCounts(EMPTY_ADMIN_COUNTS);
       }
     } finally {
       setLoading(false);
@@ -66,19 +78,20 @@ export function NavProvider({ children }) {
     refreshNav();
   }, [refreshNav]);
 
-  const notificationCount = pendingCount + adminPendingCount;
+  const notificationCount = pendingCount + adminPendingCounts.total;
 
   const value = useMemo(
     () => ({
       organizations,
       teams,
       pendingCount,
-      adminPendingCount,
+      adminPendingCounts,
+      adminPendingCount: adminPendingCounts.total,
       notificationCount,
       navLoading: loading,
       refreshNav,
     }),
-    [organizations, teams, pendingCount, adminPendingCount, notificationCount, loading, refreshNav],
+    [organizations, teams, pendingCount, adminPendingCounts, notificationCount, loading, refreshNav],
   );
 
   return <NavContext.Provider value={value}>{children}</NavContext.Provider>;

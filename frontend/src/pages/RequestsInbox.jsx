@@ -131,7 +131,7 @@ function InboxList({
 
 export default function RequestsInbox() {
   const { user } = useAuth();
-  const { refreshNav } = useNav();
+  const { refreshNav, adminPendingCounts } = useNav();
   const [pending, setPending] = useState([]);
   const [reviewed, setReviewed] = useState([]);
   const [sent, setSent] = useState([]);
@@ -236,6 +236,24 @@ export default function RequestsInbox() {
     sent: 'Requests and invites you submitted. Cancel pending items here while you wait for a response.',
   };
 
+  const adminQueues = [
+    {
+      label: 'Beta feedback',
+      to: '/admin/beta-feedback',
+      count: adminPendingCounts.beta_feedback,
+    },
+    {
+      label: 'Password reset requests',
+      to: '/admin/password-reset-requests',
+      count: adminPendingCounts.password_reset_requests,
+    },
+    {
+      label: 'Game suggestions',
+      to: '/admin/game-suggestions',
+      count: adminPendingCounts.game_suggestions,
+    },
+  ];
+
   return (
     <Page
       title="Requests"
@@ -249,17 +267,30 @@ export default function RequestsInbox() {
           <h3 className="coach-tools-section-title">Platform admin</h3>
           <p className="form-page-intro mb-3">
             Review beta feedback, password reset requests, and game suggestions from the staff queue.
+            {adminPendingCounts.total > 0 && (
+              <>
+                {' '}
+                <strong>{adminPendingCounts.total} item{adminPendingCounts.total === 1 ? '' : 's'} need review.</strong>
+              </>
+            )}
           </p>
-          <div className="coach-tools-actions">
-            <Button as={Link} to="/admin/beta-feedback" variant="outline-primary" size="sm">
-              Beta feedback
-            </Button>
-            <Button as={Link} to="/admin/password-reset-requests" variant="outline-primary" size="sm">
-              Password reset requests
-            </Button>
-            <Button as={Link} to="/admin/game-suggestions" variant="outline-primary" size="sm">
-              Game suggestions
-            </Button>
+          <div className="admin-queue-list">
+            {adminQueues.map((queue) => (
+              <Link
+                key={queue.to}
+                to={queue.to}
+                className={`admin-queue-link${queue.count > 0 ? ' admin-queue-link-pending' : ''}`}
+              >
+                <span className="admin-queue-link-label">{queue.label}</span>
+                {queue.count > 0 ? (
+                  <Badge bg="danger" className="admin-queue-link-badge">
+                    {queue.count} pending
+                  </Badge>
+                ) : (
+                  <span className="admin-queue-link-status">Up to date</span>
+                )}
+              </Link>
+            ))}
           </div>
         </section>
       )}
