@@ -6,6 +6,11 @@ import Form from 'react-bootstrap/Form';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
 import { activityLabel } from '../utils/gameLabels';
+import {
+  digitsFromRaceTimeInput,
+  formatRaceTimeFromDigits,
+  isRaceTimeDigitsComplete,
+} from '../utils/raceTimeInput';
 import * as gamesApi from '../api/games';
 import * as performancesApi from '../api/performances';
 import * as teamApi from '../api/teams';
@@ -20,7 +25,8 @@ export default function AddTime() {
   const [gameId, setGameId] = useState(searchParams.get('game') || '');
   const [levelId, setLevelId] = useState('');
   const [memberUserId, setMemberUserId] = useState('');
-  const [timeInput, setTimeInput] = useState('');
+  const [timeDigits, setTimeDigits] = useState('');
+  const timeInput = formatRaceTimeFromDigits(timeDigits);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
@@ -73,8 +79,34 @@ export default function AddTime() {
     });
   }, [gameId, trackLabel]);
 
+  const handleTimeKeyDown = (event) => {
+    if (event.key === 'Backspace') {
+      event.preventDefault();
+      setTimeDigits((current) => current.slice(0, -1));
+      return;
+    }
+    if (/^\d$/.test(event.key)) {
+      event.preventDefault();
+      setTimeDigits((current) => `${current}${event.key}`.slice(0, 8));
+    }
+  };
+
+  const handleTimePaste = (event) => {
+    event.preventDefault();
+    const pasted = event.clipboardData.getData('text');
+    setTimeDigits(digitsFromRaceTimeInput(pasted));
+  };
+
+  const handleTimeChange = (event) => {
+    setTimeDigits(digitsFromRaceTimeInput(event.target.value));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!isRaceTimeDigitsComplete(timeDigits)) {
+      setError('Enter the full time using digits only (example: 143411 for 1:43.411).');
+      return;
+    }
     setBusy(true);
     setError('');
     setSuccess('');
@@ -89,7 +121,7 @@ export default function AddTime() {
       }
       await performancesApi.submitResult(payload);
       setSuccess('Time saved.');
-      setTimeInput('');
+      setTimeDigits('');
     } catch (err) {
       const data = err.response?.data;
       setError(
@@ -141,7 +173,8 @@ export default function AddTime() {
 
       <section className="esports-panel form-page-panel">
         <p className="form-page-intro mb-3">
-          Enter a time in M:SS.mmm format. Coaches can submit for any competing member.
+          Enter a time in M:SS.mmm format. Type digits only and we will insert the colon and period
+          (example: 143411 becomes 1:43.411). Coaches can submit for any competing member.
         </p>
         <Form onSubmit={handleSubmit} className="coach-tools-form">
           {isCoach && (
@@ -187,13 +220,18 @@ export default function AddTime() {
           <Form.Group>
             <Form.Label>Time</Form.Label>
             <Form.Control
-              inputMode="decimal"
+              inputMode="numeric"
+              autoComplete="off"
               placeholder="1:43.411"
               value={timeInput}
-              onChange={(e) => setTimeInput(e.target.value)}
+              onChange={handleTimeChange}
+              onKeyDown={handleTimeKeyDown}
+              onPaste={handleTimePaste}
               required
             />
-            <Form.Text className="dashboard-panel-meta">Example: 1:43.411</Form.Text>
+            <Form.Text className="dashboard-panel-meta">
+              Type digits only — example: 143411 for 1:43.411
+            </Form.Text>
           </Form.Group>
 
           <Button type="submit" variant="outline-primary" disabled={busy}>
