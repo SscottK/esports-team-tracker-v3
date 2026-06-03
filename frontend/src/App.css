@@ -488,6 +488,81 @@ html[data-color-mode='light'] .esports-page .alert-warning {
   }
 }
 
+.server-wake-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at top, var(--esports-glow), transparent 42%),
+    rgba(7, 11, 18, 0.84);
+  backdrop-filter: blur(8px);
+}
+
+html[data-color-mode='light'] .server-wake-overlay {
+  background:
+    radial-gradient(circle at top, var(--esports-glow), transparent 42%),
+    rgba(238, 242, 247, 0.88);
+}
+
+.server-wake-panel {
+  width: min(100%, 440px);
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 20px 60px var(--esports-shadow);
+}
+
+.server-wake-title {
+  margin: 0 0 0.65rem;
+  color: var(--esports-text);
+  font-size: clamp(1.2rem, 4vw, 1.55rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.server-wake-detail {
+  margin: 0 0 1.25rem;
+  color: var(--esports-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.server-wake-progress-wrap {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.server-wake-progress {
+  height: 0.6rem;
+  background: var(--esports-surface-strong);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.server-wake-progress .progress-bar {
+  background: linear-gradient(90deg, var(--esports-accent), var(--esports-secondary), var(--esports-tertiary));
+  box-shadow: 0 0 16px var(--esports-glow);
+  transition: width 0.4s ease;
+}
+
+.server-wake-progress-label {
+  color: var(--esports-accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.server-wake-failed {
+  margin-top: 1rem;
+  color: var(--esports-muted);
+  font-size: 0.88rem;
+}
+
 .landing-title {
   color: var(--esports-text);
   font-size: clamp(1.75rem, 5vw, 2.5rem);

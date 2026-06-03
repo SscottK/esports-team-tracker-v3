@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { waitForServerFromApi, isServerUnavailableError } from './serverWake';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -7,6 +8,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 20000,
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -21,6 +23,21 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    if (
+      originalRequest
+      && !originalRequest._wakeRetry
+      && isServerUnavailableError(error)
+    ) {
+      originalRequest._wakeRetry = true;
+      try {
+        await waitForServerFromApi();
+        return apiClient(originalRequest);
+      } catch {
+        return Promise.reject(error);
+      }
+    }
+
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
