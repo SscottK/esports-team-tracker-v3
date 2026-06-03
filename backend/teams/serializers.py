@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from games.models import Game
 from games.serializers import GameSerializer
-from teams.models import CoachRole, JoinRequestStatus, Team, TeamGame, TeamJoinRequest, TeamMembership, TeamMigrationRequest
+from teams.models import CoachRole, JoinRequestStatus, Team, TeamGame, TeamInvite, TeamJoinRequest, TeamMembership, TeamMigrationRequest
 from teams.theme_constants import normalize_hex_color
 
 
@@ -181,6 +181,39 @@ class ReviewTeamJoinRequestSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=('approve', 'reject', 'cancel'))
     coach_role = serializers.ChoiceField(choices=CoachRole.choices, required=False)
     is_competing_member = serializers.BooleanField(default=True)
+
+
+class CreateTeamInviteSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+
+
+class TeamInviteSerializer(serializers.ModelSerializer):
+    invited_username = serializers.CharField(source='invited_user.username', read_only=True)
+    invited_user_id = serializers.IntegerField(source='invited_user.id', read_only=True)
+    invited_by_username = serializers.CharField(source='invited_by.username', read_only=True)
+    team_name = serializers.CharField(source='team.name', read_only=True)
+    organization_name = serializers.CharField(source='team.organization.name', read_only=True)
+
+    class Meta:
+        model = TeamInvite
+        fields = [
+            'id',
+            'team',
+            'team_name',
+            'organization_name',
+            'invited_user_id',
+            'invited_username',
+            'invited_by',
+            'invited_by_username',
+            'status',
+            'reviewed_by',
+            'created_at',
+            'updated_at',
+        ]
+
+
+class RespondTeamInviteSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(choices=('accept', 'decline', 'cancel'))
 
 
 class RequestTeamMigrationSerializer(serializers.Serializer):

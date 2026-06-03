@@ -143,6 +143,40 @@ class TeamJoinRequest(models.Model):
         return f'{self.user.username} → {self.team.name} ({self.status})'
 
 
+class TeamInvite(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='invites')
+    invited_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='team_invites',
+    )
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_team_invites',
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=JoinRequestStatus.choices,
+        default=JoinRequestStatus.PENDING,
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='responded_team_invites',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.invited_user.username} ← {self.team.name} ({self.status})'
+
+
 class TeamMigrationRequest(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='migration_requests')
     source_organization = models.ForeignKey(

@@ -12,6 +12,7 @@ import * as requestsApi from '../api/requests';
 function requestTypeLabel(type) {
   if (type === 'org_join') return 'Organization join';
   if (type === 'team_join') return 'Team join';
+  if (type === 'team_invite') return 'Team invite';
   if (type === 'outgoing_team_migration') return 'Team move (outgoing)';
   if (type === 'incoming_team_migration') return 'Team move (incoming)';
   return type;
@@ -29,7 +30,7 @@ function formatDate(isoString) {
   return new Date(isoString).toLocaleString();
 }
 
-function InboxList({ items, emptyMessage, onReview, busy, showActions = false }) {
+function InboxList({ items, emptyMessage, onReview, onRespond, busy, showActions = false }) {
   if (items.length === 0) {
     return <p className="dashboard-empty-copy mb-0">{emptyMessage}</p>;
   }
@@ -49,24 +50,49 @@ function InboxList({ items, emptyMessage, onReview, busy, showActions = false })
           </div>
           {showActions && (
             <div className="inbox-item-actions">
-              <Button
-                size="sm"
-                variant="outline-success"
-                className="team-member-history-btn"
-                disabled={busy}
-                onClick={() => onReview(item, 'approve')}
-              >
-                Approve
-              </Button>
-              <Button
-                size="sm"
-                variant="outline-danger"
-                className="team-member-history-btn"
-                disabled={busy}
-                onClick={() => onReview(item, 'reject')}
-              >
-                Deny
-              </Button>
+              {item.action === 'respond' ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline-success"
+                    className="team-member-history-btn"
+                    disabled={busy}
+                    onClick={() => onRespond(item, 'accept')}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    className="team-member-history-btn"
+                    disabled={busy}
+                    onClick={() => onRespond(item, 'decline')}
+                  >
+                    Decline
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline-success"
+                    className="team-member-history-btn"
+                    disabled={busy}
+                    onClick={() => onReview(item, 'approve')}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    className="team-member-history-btn"
+                    disabled={busy}
+                    onClick={() => onReview(item, 'reject')}
+                  >
+                    Deny
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -129,6 +155,21 @@ export default function RequestsInbox() {
     }
   };
 
+  const handleRespond = async (item, action) => {
+    setBusy(true);
+    setError('');
+    setSuccess('');
+    try {
+      await teamApi.respondTeamInvite(item.team_id, item.id, action);
+      setSuccess(action === 'accept' ? 'Invite accepted.' : 'Invite declined.');
+      await Promise.all([load(), refreshNav()]);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Unable to respond to invite.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return <Page title="Requests"><p className="dashboard-loading">Loading...</p></Page>;
   }
@@ -173,14 +214,15 @@ export default function RequestsInbox() {
 
         <p className="form-page-intro">
           {isPendingView
-            ? 'Organization leaders see org and team move requests. Coaches see team join requests.'
-            : 'Requests you have already approved or denied.'}
+            ? 'Organization leaders see org and team move requests. Coaches see team join requests. Invites sent to you appear here too.'
+            : 'Requests you have already approved, denied, accepted, or declined.'}
         </p>
 
         <InboxList
           items={activeItems}
           emptyMessage={isPendingView ? 'No pending requests.' : 'No reviewed requests yet.'}
           onReview={handleReview}
+          onRespond={handleRespond}
           busy={busy}
           showActions={isPendingView}
         />

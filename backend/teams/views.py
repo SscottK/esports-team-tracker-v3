@@ -18,24 +18,34 @@ from teams.models import (
     Team,
     TeamGame,
     TeamJoinRequest,
+    TeamInvite,
     TeamMembership,
     TeamMigrationRequest,
     TeamMigrationStatus,
 )
 from teams.serializers import (
     AddTeamMemberSerializer,
+    CreateTeamInviteSerializer,
     CreateTeamSerializer,
     LeaveTeamSerializer,
     RequestTeamMigrationSerializer,
+    RespondTeamInviteSerializer,
     ReviewTeamJoinRequestSerializer,
     ReviewTeamMigrationSerializer,
     TeamGameSerializer,
+    TeamInviteSerializer,
     TeamJoinRequestSerializer,
     TeamMembershipSerializer,
     TeamMigrationRequestSerializer,
     TeamSerializer,
     UpdateTeamSerializer,
     UpdateTeamMembershipSerializer,
+)
+from teams.services.invites import (
+    TeamInviteError,
+    cancel_team_invite,
+    create_team_invite,
+    respond_team_invite,
 )
 from teams.services.join_requests import (
     JoinRequestError,
@@ -273,6 +283,84 @@ class TeamJoinRequestDetailView(APIView):
             return Response({'detail': exc.message}, status=exc.status_code)
 
         response = TeamJoinRequestSerializer(join_request).data
+        if membership:
+            response['membership'] = TeamMembershipSerializer(membership).data
+        return Response(response)
+
+
+class TeamInviteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, team_id):
+        if not user_is_head_coach(request.user, team_id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        invites = TeamInvite.objects.filter(
+            team_id=team_id,
+            status=JoinRequestStatus.PENDING,
+        ).select_related('invited_user', 'invited_by', 'team', 'team__organization')
+        return Response(TeamInviteSerializer(invites, many=True).data)
+
+    def post(self, request, team_id):
+        serializer = CreateTeamInviteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            invite = create_team_invite(
+                request.user,
+                team_id,
+                serializer.validated_data['username'],
+            )
+        except TeamInviteError as exc:
+            return Response({'detail': exc.message}, status=exc.status_code)
+        invite = TeamInvite.objects.select_related(
+            'invited_user',
+            'invited_by',
+            'team',
+            'team__organization',
+        ).get(pk=invite.pk)
+        return Response(
+            TeamInviteSerializer(invite).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class TeamInviteDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, team_id, invite_id):
+        serializer = RespondTeamInviteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        action = serializer.validated_data['action']
+
+        if action == 'cancel':
+            try:
+                invite = cancel_team_invite(request.user, invite_id, team_id)
+            except TeamInviteError as exc:
+                return Response({'detail': exc.message}, status=exc.status_code)
+            invite = TeamInvite.objects.select_related(
+                'invited_user',
+                'invited_by',
+                'team',
+                'team__organization',
+            ).get(pk=invite.pk)
+            return Response(TeamInviteSerializer(invite).data)
+
+        try:
+            invite, membership = respond_team_invite(
+                request.user,
+                invite_id,
+                team_id,
+                action=action,
+            )
+        except TeamInviteError as exc:
+            return Response({'detail': exc.message}, status=exc.status_code)
+
+        invite = TeamInvite.objects.select_related(
+            'invited_user',
+            'invited_by',
+            'team',
+            'team__organization',
+        ).get(pk=invite.pk)
+        response = TeamInviteSerializer(invite).data
         if membership:
             response['membership'] = TeamMembershipSerializer(membership).data
         return Response(response)

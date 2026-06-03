@@ -63,7 +63,7 @@ export function ThemeProvider({ children }) {
     const root = document.documentElement;
     root.dataset.colorMode = colorMode;
     localStorage.setItem(COLOR_MODE_KEY, colorMode);
-    applyTeamColorsToRoot(root, teamColors);
+    applyTeamColorsToRoot(root, teamColors, colorMode);
   }, [colorMode, teamColors]);
 
   const toggleColorMode = useCallback(() => {

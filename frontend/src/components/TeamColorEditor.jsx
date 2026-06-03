@@ -98,7 +98,8 @@ export default function TeamColorEditor({ team, busy, onSave }) {
     <section className="esports-panel coach-tools-panel mb-4">
       <h3 className="coach-tools-section-title">Team colors</h3>
       <p className="dashboard-panel-meta mb-3">
-        Choose primary, secondary, and tertiary colors for your team. They apply across the app while this team is active.
+        Choose primary, secondary, and tertiary colors for your team. They tint the page background,
+        cards, buttons, and accents across the app while this team is active.
       </p>
 
       <div

@@ -77,6 +77,21 @@ export const reviewTeamJoinRequest = async (teamId, requestId, payload) => {
   return response.data;
 };
 
+export const getTeamInvites = async (teamId) => {
+  const response = await apiClient.get(`/teams/${teamId}/invites/`);
+  return response.data;
+};
+
+export const sendTeamInvite = async (teamId, username) => {
+  const response = await apiClient.post(`/teams/${teamId}/invites/`, { username });
+  return response.data;
+};
+
+export const respondTeamInvite = async (teamId, inviteId, action) => {
+  const response = await apiClient.patch(`/teams/${teamId}/invites/${inviteId}/`, { action });
+  return response.data;
+};
+
 export const getTeamMigrationRequests = async (teamId) => {
   const response = await apiClient.get(`/teams/${teamId}/migration-requests/`);
   return response.data;

@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 
 from orgs.models import OrgJoinCode, OrgMembership, Organization
-from teams.models import CoachRole, Team, TeamJoinRequest, TeamMembership, TeamMigrationRequest, TeamMigrationStatus
+from teams.models import CoachRole, Team, TeamInvite, TeamJoinRequest, TeamMembership, TeamMigrationRequest, TeamMigrationStatus
 
 User = get_user_model()
 
@@ -339,3 +339,145 @@ class TeamColorThemeTests(TestCase):
             format='json',
         )
         self.assertEqual(response.status_code, 403)
+
+
+class TeamInviteTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.org = Organization.objects.create(name='Home Org')
+        self.other_org = Organization.objects.create(name='Other Org')
+        OrgJoinCode.objects.create(organization=self.org)
+        OrgJoinCode.objects.create(organization=self.other_org)
+
+        self.head = User.objects.create_user(username='head', password='pass12345')
+        self.invitee = User.objects.create_user(username='invitee', password='pass12345')
+        self.same_org_user = User.objects.create_user(username='same_org', password='pass12345')
+        self.other_org_user = User.objects.create_user(username='other_org', password='pass12345')
+        self.assistant = User.objects.create_user(username='assistant', password='pass12345')
+
+        OrgMembership.objects.create(user=self.head, organization=self.org, is_admin=True)
+        OrgMembership.objects.create(user=self.same_org_user, organization=self.org, is_admin=False)
+        OrgMembership.objects.create(user=self.other_org_user, organization=self.other_org, is_admin=False)
+
+        self.team = Team.objects.create(organization=self.org, name='Alpha')
+        self.other_team = Team.objects.create(organization=self.org, name='Beta')
+        TeamMembership.objects.create(
+            user=self.head,
+            team=self.team,
+            coach_role=CoachRole.HEAD,
+            is_competing_member=False,
+        )
+        TeamMembership.objects.create(
+            user=self.assistant,
+            team=self.team,
+            coach_role=CoachRole.ASSISTANT,
+            is_competing_member=False,
+        )
+        TeamMembership.objects.create(
+            user=self.same_org_user,
+            team=self.other_team,
+            coach_role=CoachRole.NONE,
+            is_competing_member=True,
+        )
+
+    def test_head_coach_can_send_invite(self):
+        self.client.force_authenticate(user=self.head)
+        response = self.client.post(
+            f'/api/teams/{self.team.id}/invites/',
+            {'username': 'invitee'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['status'], 'pending')
+        self.assertEqual(response.data['invited_username'], 'invitee')
+
+    def test_assistant_coach_cannot_send_invite(self):
+        self.client.force_authenticate(user=self.assistant)
+        response = self.client.post(
+            f'/api/teams/{self.team.id}/invites/',
+            {'username': 'invitee'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_invitee_with_no_org_can_accept(self):
+        invite = TeamInvite.objects.create(
+            team=self.team,
+            invited_user=self.invitee,
+            invited_by=self.head,
+        )
+        self.client.force_authenticate(user=self.invitee)
+        response = self.client.patch(
+            f'/api/teams/{self.team.id}/invites/{invite.id}/',
+            {'action': 'accept'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(OrgMembership.objects.filter(user=self.invitee, organization=self.org).exists())
+        self.assertTrue(TeamMembership.objects.filter(user=self.invitee, team=self.team).exists())
+
+    def test_same_org_user_can_accept_team_only(self):
+        invite = TeamInvite.objects.create(
+            team=self.team,
+            invited_user=self.same_org_user,
+            invited_by=self.head,
+        )
+        self.client.force_authenticate(user=self.same_org_user)
+        response = self.client.patch(
+            f'/api/teams/{self.team.id}/invites/{invite.id}/',
+            {'action': 'accept'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            OrgMembership.objects.filter(user=self.same_org_user, organization=self.org).count(),
+            1,
+        )
+        self.assertTrue(TeamMembership.objects.filter(user=self.same_org_user, team=self.team).exists())
+
+    def test_other_org_user_cannot_accept(self):
+        invite = TeamInvite.objects.create(
+            team=self.team,
+            invited_user=self.other_org_user,
+            invited_by=self.head,
+        )
+        self.client.force_authenticate(user=self.other_org_user)
+        response = self.client.patch(
+            f'/api/teams/{self.team.id}/invites/{invite.id}/',
+            {'action': 'accept'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(TeamMembership.objects.filter(user=self.other_org_user, team=self.team).exists())
+
+    def test_invitee_can_decline(self):
+        invite = TeamInvite.objects.create(
+            team=self.team,
+            invited_user=self.invitee,
+            invited_by=self.head,
+        )
+        self.client.force_authenticate(user=self.invitee)
+        response = self.client.patch(
+            f'/api/teams/{self.team.id}/invites/{invite.id}/',
+            {'action': 'decline'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        invite.refresh_from_db()
+        self.assertEqual(invite.status, 'rejected')
+
+    def test_head_coach_can_cancel_pending_invite(self):
+        invite = TeamInvite.objects.create(
+            team=self.team,
+            invited_user=self.invitee,
+            invited_by=self.head,
+        )
+        self.client.force_authenticate(user=self.head)
+        response = self.client.patch(
+            f'/api/teams/{self.team.id}/invites/{invite.id}/',
+            {'action': 'cancel'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        invite.refresh_from_db()
+        self.assertEqual(invite.status, 'cancelled')

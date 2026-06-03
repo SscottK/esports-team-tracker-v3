@@ -15,6 +15,7 @@ import OrgDetail from './pages/OrgDetail';
 import OrgLeaderTools from './pages/OrgLeaderTools';
 import TeamDetail from './pages/TeamDetail';
 import TeamCoachTools from './pages/TeamCoachTools';
+import TeamCoachColors from './pages/TeamCoachColors';
 import TimesGrid from './pages/TimesGrid';
 import AddTime from './pages/AddTime';
 import AddTimeMenu from './pages/AddTimeMenu';
@@ -47,6 +48,7 @@ function App() {
                 <Route path="/add-time" element={<AddTimeMenu />} />
                 <Route path="/teams/:teamId" element={<TeamDetail />} />
                 <Route path="/teams/:teamId/coach" element={<TeamCoachTools />} />
+                <Route path="/teams/:teamId/coach/colors" element={<TeamCoachColors />} />
                 <Route path="/teams/:teamId/games/:gameId" element={<TimesGrid />} />
                 <Route path="/teams/:teamId/games/:gameId/compare" element={<CompareTimes />} />
                 <Route path="/teams/:teamId/add-time" element={<AddTime />} />

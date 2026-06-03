@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from teams.models import Team, TeamGame, TeamJoinRequest, TeamMembership, TeamMigrationRequest
+from teams.models import Team, TeamGame, TeamInvite, TeamJoinRequest, TeamMembership, TeamMigrationRequest
 
 
 class TeamMembershipInline(admin.TabularInline):
@@ -23,6 +23,12 @@ class TeamAdmin(admin.ModelAdmin):
 @admin.register(TeamJoinRequest)
 class TeamJoinRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'team', 'status', 'created_at', 'reviewed_by')
+    list_filter = ('status', 'team__organization')
+
+
+@admin.register(TeamInvite)
+class TeamInviteAdmin(admin.ModelAdmin):
+    list_display = ('invited_user', 'team', 'status', 'invited_by', 'created_at', 'reviewed_by')
     list_filter = ('status', 'team__organization')
 
 

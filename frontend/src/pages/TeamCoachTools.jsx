@@ -7,11 +7,11 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
-import TeamColorEditor from '../components/TeamColorEditor';
 import { migrationStatusLabel, roleLabel } from '../utils/teamMembership';
 import { useNav } from '../context/NavContext';
 import * as gamesApi from '../api/games';
 import * as teamApi from '../api/teams';
+import * as usersApi from '../api/users';
 
 export default function TeamCoachTools() {
   const { teamId } = useParams();
@@ -26,6 +26,9 @@ export default function TeamCoachTools() {
   const [myMembership, setMyMembership] = useState(null);
   const [selectedGameId, setSelectedGameId] = useState('');
   const [username, setUsername] = useState('');
+  const [inviteUsername, setInviteUsername] = useState('');
+  const [inviteLookup, setInviteLookup] = useState(null);
+  const [pendingInvites, setPendingInvites] = useState([]);
   const [newCoachRole, setNewCoachRole] = useState('none');
   const [newCompeting, setNewCompeting] = useState(true);
   const [error, setError] = useState('');
@@ -48,12 +51,13 @@ export default function TeamCoachTools() {
     setLoading(true);
     setError('');
     try {
-      const [teamData, games, catalog, memberData, pendingMigrations] = await Promise.all([
+      const [teamData, games, catalog, memberData, pendingMigrations, invites] = await Promise.all([
         teamApi.getTeam(teamId),
         teamApi.getTeamGames(teamId),
         gamesApi.getCatalogGames(),
         teamApi.getTeamMembers(teamId),
         teamApi.getTeamMigrationRequests(teamId).catch(() => []),
+        teamApi.getTeamInvites(teamId).catch(() => []),
       ]);
       setTeam(teamData);
       setTeamGames(games);
@@ -61,6 +65,7 @@ export default function TeamCoachTools() {
       setMemberships(memberData.memberships);
       setMyMembership(memberData.my_membership);
       setMigrationRequests(Array.isArray(pendingMigrations) ? pendingMigrations : []);
+      setPendingInvites(Array.isArray(invites) ? invites : []);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to load team.');
     } finally {
@@ -77,22 +82,6 @@ export default function TeamCoachTools() {
       navigate(`/teams/${teamId}`, { replace: true });
     }
   }, [loading, myMembership, navigate, teamId]);
-
-  const handleSaveTeamColors = async (payload) => {
-    setBusy(true);
-    setError('');
-    setSuccess('');
-    try {
-      const updated = await teamApi.updateTeamColors(teamId, payload);
-      setTeam(updated);
-      await refreshNav();
-      setSuccess('Team colors updated.');
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Unable to update team colors.');
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const handleAddGame = async (event) => {
     event.preventDefault();
@@ -128,6 +117,56 @@ export default function TeamCoachTools() {
       await load();
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to add team member.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleLookupInviteUser = async (event) => {
+    event.preventDefault();
+    if (!inviteUsername.trim()) return;
+    setBusy(true);
+    setError('');
+    setSuccess('');
+    setInviteLookup(null);
+    try {
+      const user = await usersApi.lookupUser(inviteUsername.trim());
+      setInviteLookup(user);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'User not found.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleSendInvite = async () => {
+    if (!inviteLookup) return;
+    setBusy(true);
+    setError('');
+    setSuccess('');
+    try {
+      await teamApi.sendTeamInvite(teamId, inviteLookup.username);
+      setInviteUsername('');
+      setInviteLookup(null);
+      setSuccess(`Invite sent to ${inviteLookup.username}.`);
+      await load();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Unable to send invite.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleCancelInvite = async (inviteId) => {
+    setBusy(true);
+    setError('');
+    setSuccess('');
+    try {
+      await teamApi.respondTeamInvite(teamId, inviteId, 'cancel');
+      setSuccess('Invite cancelled.');
+      await load();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Unable to cancel invite.');
     } finally {
       setBusy(false);
     }
@@ -245,6 +284,11 @@ export default function TeamCoachTools() {
           <Button as={Link} to={uploadTimesPath} variant="outline-primary" size="sm">
             Upload CSV
           </Button>
+          {isHeadCoach && (
+            <Button as={Link} to={`/teams/${teamId}/coach/colors`} variant="outline-primary" size="sm">
+              Team colors
+            </Button>
+          )}
           <BackButton fallback={`/teams/${teamId}`} />
         </div>
       )}
@@ -268,7 +312,58 @@ export default function TeamCoachTools() {
       </div>
 
       {isHeadCoach && (
-        <TeamColorEditor team={team} busy={busy} onSave={handleSaveTeamColors} />
+        <section className="esports-panel coach-tools-panel mb-4">
+          <h3 className="coach-tools-section-title">Invite to team</h3>
+          <p className="dashboard-panel-meta mb-3">
+            Search by username and send an invite. The user joins your organization and team when they accept.
+            Users in another organization must leave it first.
+          </p>
+          <Form onSubmit={handleLookupInviteUser} className="coach-tools-form">
+            <Form.Group>
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                placeholder="Username"
+                value={inviteUsername}
+                onChange={(e) => {
+                  setInviteUsername(e.target.value);
+                  setInviteLookup(null);
+                }}
+                required
+              />
+            </Form.Group>
+            <Button type="submit" variant="outline-primary" disabled={busy}>
+              Look up user
+            </Button>
+          </Form>
+          {inviteLookup && (
+            <div className="coach-tools-invite-confirm mt-3">
+              <p className="mb-2">
+                Send invite to <strong>{inviteLookup.username}</strong>?
+              </p>
+              <Button variant="outline-success" disabled={busy} onClick={handleSendInvite}>
+                Send invite
+              </Button>
+            </div>
+          )}
+          {pendingInvites.length > 0 && (
+            <ul className="coach-tools-game-list mt-3 mb-0">
+              {pendingInvites.map((invite) => (
+                <li key={invite.id} className="coach-tools-invite-row">
+                  <span>{invite.invited_username}</span>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    className="team-member-history-btn"
+                    disabled={busy}
+                    onClick={() => handleCancelInvite(invite.id)}
+                  >
+                    Cancel
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
 
       <div className="coach-tools-grid">

@@ -7,6 +7,7 @@ from teams.models import (
     CoachRole,
     JoinRequestStatus,
     TeamJoinRequest,
+    TeamInvite,
     TeamMembership,
     TeamMigrationRequest,
     TeamMigrationStatus,
@@ -117,6 +118,24 @@ class RequestInboxView(APIView):
                 team_id=join_request.team_id,
             ))
 
+        team_invites = TeamInvite.objects.filter(
+            invited_user=user,
+            status=JoinRequestStatus.PENDING,
+        ).select_related('team', 'team__organization', 'invited_by')
+        for invite in team_invites:
+            pending.append(_inbox_item(
+                item_type='team_invite',
+                request_id=invite.id,
+                title=invite.team.name,
+                subtitle=(
+                    f'Invite from {invite.invited_by.username}'
+                    f' · {invite.team.organization.name}'
+                ),
+                created_at=invite.created_at,
+                team_id=invite.team_id,
+                action='respond',
+            ))
+
         pending.sort(key=lambda item: item['created_at'], reverse=True)
 
         reviewed = []
@@ -185,6 +204,23 @@ class RequestInboxView(APIView):
                 created_at=join_request.updated_at,
                 status=join_request.status,
                 team_id=join_request.team_id,
+                action='view',
+            ))
+
+        reviewed_team_invites = TeamInvite.objects.filter(
+            invited_user=user,
+        ).exclude(
+            status=JoinRequestStatus.PENDING,
+        ).select_related('team', 'team__organization', 'invited_by')
+        for invite in reviewed_team_invites:
+            reviewed.append(_inbox_item(
+                item_type='team_invite',
+                request_id=invite.id,
+                title=invite.team.name,
+                subtitle=f'Invite from {invite.invited_by.username} · {invite.team.organization.name}',
+                created_at=invite.updated_at,
+                status=invite.status,
+                team_id=invite.team_id,
                 action='view',
             ))
 
