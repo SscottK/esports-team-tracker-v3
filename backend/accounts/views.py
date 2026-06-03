@@ -1,10 +1,23 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import RegisterSerializer, UserSerializer
+from accounts.models import PasswordResetRequest, PasswordResetRequestStatus
+from accounts.services.password_reset_requests import (
+    PasswordResetRequestError,
+    create_password_reset_request,
+    review_password_reset_request,
+)
+from performances.permissions import IsPlatformAdmin
+from .serializers import (
+    AdminPasswordResetRequestSerializer,
+    CreatePasswordResetRequestSerializer,
+    RegisterSerializer,
+    ReviewPasswordResetRequestSerializer,
+    UserSerializer,
+)
 
 User = get_user_model()
 
@@ -40,3 +53,51 @@ class UserLookupView(APIView):
         if not user:
             return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         return Response({'id': user.id, 'username': user.username})
+
+
+PASSWORD_RESET_ACK = (
+    'If an account matches that username, a platform admin will review your request.'
+)
+
+
+class PasswordResetRequestCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = CreatePasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_password_reset_request(
+            username=serializer.validated_data['username'],
+            contact_email=serializer.validated_data.get('contact_email', ''),
+            message=serializer.validated_data.get('message', ''),
+        )
+        return Response({'detail': PASSWORD_RESET_ACK}, status=status.HTTP_201_CREATED)
+
+
+class AdminPasswordResetRequestView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def get(self, request):
+        show_reviewed = request.query_params.get('show_reviewed', '').lower() in ('1', 'true', 'yes')
+        queryset = PasswordResetRequest.objects.select_related('user', 'reviewed_by')
+        if not show_reviewed:
+            queryset = queryset.filter(status=PasswordResetRequestStatus.PENDING)
+        return Response(AdminPasswordResetRequestSerializer(queryset, many=True).data)
+
+
+class AdminPasswordResetRequestDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def patch(self, request, request_id):
+        serializer = ReviewPasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            reset_request = review_password_reset_request(
+                request.user,
+                request_id,
+                action=serializer.validated_data['action'],
+                admin_notes=serializer.validated_data.get('admin_notes', ''),
+            )
+        except PasswordResetRequestError as exc:
+            return Response({'detail': exc.message}, status=exc.status_code)
+        return Response(AdminPasswordResetRequestSerializer(reset_request).data)

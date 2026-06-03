@@ -81,6 +81,57 @@ html[data-color-mode='light'] body {
   gap: 0.4rem;
 }
 
+.page-header-actions--compact {
+  flex-wrap: nowrap;
+}
+
+.page-links-menu {
+  position: relative;
+}
+
+.page-links-menu-trigger {
+  min-width: 6.5rem;
+}
+
+.page-links-menu-panel {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 40;
+  min-width: 11.5rem;
+  padding: 0.35rem;
+  background: var(--esports-panel);
+  border: 1px solid var(--esports-panel-border);
+  border-radius: 0.65rem;
+  box-shadow: 0 12px 40px var(--esports-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.page-links-menu-item {
+  display: block;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.45rem;
+  color: var(--esports-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+.page-links-menu-item:hover,
+.page-links-menu-item:focus-visible {
+  background: var(--esports-accent-soft);
+  color: var(--esports-accent);
+}
+
+.page-links-menu.is-open .page-links-menu-trigger {
+  background: var(--esports-accent-soft);
+  border-color: var(--esports-accent);
+  color: var(--esports-accent);
+}
+
 .page-header .btn,
 .page-header-actions .btn {
   display: inline-flex;

@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import BackButton from '../components/BackButton';
+import PageLinksMenu from '../components/PageLinksMenu';
 import Page from '../components/Page';
 import { migrationStatusLabel, roleLabel } from '../utils/teamMembership';
 import { useNav } from '../context/NavContext';
@@ -259,36 +260,23 @@ export default function TeamCoachTools() {
     ? `/teams/${teamId}/upload-times?game=${defaultUploadGameId}`
     : `/teams/${teamId}/upload-times`;
 
+  const coachPageLinks = [
+    { label: 'Set benchmarks', to: `/teams/${teamId}/benchmarks` },
+    { label: 'Member histories', to: `/teams/${teamId}/time-history` },
+    { label: 'My history', to: `/teams/${teamId}/time-history?user=${myMembership.user_id}` },
+    { label: 'Add time', to: `/teams/${teamId}/add-time` },
+    { label: 'Upload CSV', to: uploadTimesPath },
+  ];
+  if (isHeadCoach) {
+    coachPageLinks.push({ label: 'Team colors', to: `/teams/${teamId}/coach/colors` });
+  }
+
   return (
     <Page
       title="Coach tools"
       actions={(
-        <div className="page-header-actions">
-          <Button as={Link} to={`/teams/${teamId}/benchmarks`} variant="outline-primary" size="sm">
-            Set benchmarks
-          </Button>
-          <Button as={Link} to={`/teams/${teamId}/time-history`} variant="outline-primary" size="sm">
-            Member histories
-          </Button>
-          <Button
-            as={Link}
-            to={`/teams/${teamId}/time-history?user=${myMembership.user_id}`}
-            variant="outline-primary"
-            size="sm"
-          >
-            My history
-          </Button>
-          <Button as={Link} to={`/teams/${teamId}/add-time`} variant="outline-primary" size="sm">
-            Add time
-          </Button>
-          <Button as={Link} to={uploadTimesPath} variant="outline-primary" size="sm">
-            Upload CSV
-          </Button>
-          {isHeadCoach && (
-            <Button as={Link} to={`/teams/${teamId}/coach/colors`} variant="outline-primary" size="sm">
-              Team colors
-            </Button>
-          )}
+        <div className="page-header-actions page-header-actions--compact">
+          <PageLinksMenu label="More pages" links={coachPageLinks} />
           <BackButton fallback={`/teams/${teamId}`} />
         </div>
       )}

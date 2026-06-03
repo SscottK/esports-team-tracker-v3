@@ -25,6 +25,8 @@ import CompareTimes from './pages/CompareTimes';
 import TimeHistory from './pages/TimeHistory';
 import UploadTimes from './pages/UploadTimes';
 import ManageGameSuggestions from './pages/ManageGameSuggestions';
+import ManagePasswordResetRequests from './pages/ManagePasswordResetRequests';
+import ForgotPassword from './pages/ForgotPassword';
 import './App.css';
 
 function App() {
@@ -38,6 +40,7 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/join-organization" element={<JoinOrganization />} />
@@ -56,6 +59,7 @@ function App() {
                 <Route path="/teams/:teamId/time-history" element={<TimeHistory />} />
                 <Route path="/teams/:teamId/benchmarks" element={<SetBenchmarks />} />
                 <Route path="/admin/game-suggestions" element={<ManageGameSuggestions />} />
+                <Route path="/admin/password-reset-requests" element={<ManagePasswordResetRequests />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

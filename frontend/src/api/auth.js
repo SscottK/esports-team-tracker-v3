@@ -37,3 +37,12 @@ export const checkHealth = async () => {
   const response = await apiClient.get('/health/');
   return response.data;
 };
+
+export const createPasswordResetRequest = async ({ username, contact_email = '', message = '' }) => {
+  const response = await apiClient.post('/auth/password-reset-requests/', {
+    username,
+    contact_email,
+    message,
+  });
+  return response.data;
+};

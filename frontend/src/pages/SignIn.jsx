@@ -69,6 +69,8 @@ export default function SignIn() {
         </Form>
       </section>
       <p className="auth-footer-text mt-3 mb-0">
+        <Link to="/forgot-password">Forgot password?</Link>
+        {' · '}
         Need an account? <Link to="/signup">Sign up</Link>
       </p>
     </Container>

@@ -158,9 +158,14 @@ export default function AppNavBar() {
                     Suggest a game
                   </Nav.Link>
                   {user.is_staff && (
-                    <Nav.Link as={NavLink} to="/admin/game-suggestions" onClick={closeMenu}>
-                      Game suggestions
-                    </Nav.Link>
+                    <>
+                      <Nav.Link as={NavLink} to="/admin/game-suggestions" onClick={closeMenu}>
+                        Game suggestions
+                      </Nav.Link>
+                      <Nav.Link as={NavLink} to="/admin/password-reset-requests" onClick={closeMenu}>
+                        Password reset requests
+                      </Nav.Link>
+                    </>
                   )}
                 </Nav>
 
