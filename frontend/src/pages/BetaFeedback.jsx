@@ -6,12 +6,17 @@ import Form from 'react-bootstrap/Form';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
 import { APP_BETA_LABEL } from '../config/appMeta';
+import {
+  FEEDBACK_PAGE_OPTIONS,
+  getFeedbackPageLabel,
+  resolveFeedbackPagePath,
+} from '../utils/feedbackPageOptions';
 import * as feedbackApi from '../api/feedback';
 
 export default function BetaFeedback() {
   const location = useLocation();
   const [message, setMessage] = useState('');
-  const [pageUrl, setPageUrl] = useState(`${location.pathname}${location.search}`);
+  const [pageUrl, setPageUrl] = useState(() => resolveFeedbackPagePath(location.pathname));
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -21,9 +26,10 @@ export default function BetaFeedback() {
     setSubmitting(true);
     setError('');
     try {
+      const pageLabel = getFeedbackPageLabel(pageUrl);
       await feedbackApi.submitBetaFeedback({
         message: message.trim(),
-        page_url: pageUrl.trim(),
+        page_url: pageLabel,
       });
       setSubmitted(true);
       setMessage('');
@@ -63,13 +69,22 @@ export default function BetaFeedback() {
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Page you were on</Form.Label>
-                <Form.Control
+                <Form.Select
                   value={pageUrl}
                   onChange={(event) => setPageUrl(event.target.value)}
-                  placeholder="/dashboard"
-                />
+                  required
+                >
+                  <option value="" disabled>
+                    Select a page
+                  </option>
+                  {FEEDBACK_PAGE_OPTIONS.map((option) => (
+                    <option key={option.path} value={option.path}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Form.Select>
               </Form.Group>
-              <Button type="submit" disabled={submitting || !message.trim()}>
+              <Button type="submit" disabled={submitting || !message.trim() || !pageUrl}>
                 {submitting ? 'Sending…' : 'Send feedback'}
               </Button>
             </Form>
