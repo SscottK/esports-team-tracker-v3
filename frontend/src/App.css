@@ -2111,6 +2111,7 @@ html[data-color-mode='light'] .server-wake-overlay {
 .inbox-layout-staff {
   display: grid;
   gap: 1.75rem;
+  width: 100%;
 }
 
 .inbox-layout-staff .inbox-section + .inbox-section {
@@ -2119,10 +2120,11 @@ html[data-color-mode='light'] .server-wake-overlay {
 
 @media (min-width: 768px) {
   .inbox-layout-staff {
-    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
     gap: 1.25rem;
     align-items: start;
-    max-width: 58rem;
+    max-width: 52rem;
+    margin-inline: auto;
   }
 
   .inbox-layout-staff .inbox-section-panel {
