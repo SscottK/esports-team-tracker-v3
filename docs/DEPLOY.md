@@ -41,7 +41,7 @@ Replace placeholder URLs with your real Vercel and Render URLs.
 |-----|--------|
 | `DEBUG` | `False` |
 | `DJANGO_SECRET_KEY` | long random string (Generate in Render) |
-| `DATABASE_URL` | link from Postgres (*Add from database*) |
+| `DATABASE_URL` | Paste **Internal Database URL** from the Postgres service → **Connect** tab (full `postgresql://…` string). If you added the key with no value, delete it or paste the URL — an empty `DATABASE_URL` breaks the build. |
 | `ALLOWED_HOSTS` | `your-api.onrender.com` |
 | `CORS_ALLOWED_ORIGINS` | `https://your-app.vercel.app` |
 | `CSRF_TRUSTED_ORIGINS` | `https://your-app.vercel.app` |

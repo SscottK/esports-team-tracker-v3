@@ -60,7 +60,8 @@ class AddTeamMemberSerializer(serializers.Serializer):
 class CreateTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['name', 'organization']
+        fields = ['id', 'name', 'organization']
+        read_only_fields = ['id']
 
     def validate(self, attrs):
         user = self.context['request'].user

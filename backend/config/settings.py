@@ -74,15 +74,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+
+def _database_url():
+    url = os.getenv('DATABASE_URL', '').strip()
+    if url:
+        return url
+    return (
+        f"postgres://{os.getenv('DB_USER', 'scott')}:"
+        f"{os.getenv('DB_PASSWORD', '')}@"
+        f"{os.getenv('DB_HOST', '') or 'localhost'}:"
+        f"{os.getenv('DB_PORT', '5432')}/"
+        f"{os.getenv('DB_NAME', 'estt_v3')}"
+    )
+
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=(
-            f"postgres://{os.getenv('DB_USER', 'scott')}:"
-            f"{os.getenv('DB_PASSWORD', '')}@"
-            f"{os.getenv('DB_HOST', '') or 'localhost'}:"
-            f"{os.getenv('DB_PORT', '5432')}/"
-            f"{os.getenv('DB_NAME', 'estt_v3')}"
-        ),
+    'default': dj_database_url.parse(
+        _database_url(),
         conn_max_age=600,
         ssl_require=not DEBUG,
     )

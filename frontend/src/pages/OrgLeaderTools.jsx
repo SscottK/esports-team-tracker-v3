@@ -80,7 +80,9 @@ export default function OrgLeaderTools() {
       setTeamName('');
       setSuccess('Team created. You are the head coach.');
       await Promise.all([load(), refreshNav()]);
-      navigate(`/teams/${createdTeam.id}`);
+      if (createdTeam?.id) {
+        navigate(`/teams/${createdTeam.id}`);
+      }
     } catch (err) {
       setError(err.response?.data?.detail || err.response?.data?.organization?.[0] || 'Unable to create team.');
     } finally {

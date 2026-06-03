@@ -53,6 +53,15 @@ export default function TeamDetail() {
   );
 
   const load = async () => {
+    if (!teamId || teamId === 'undefined') {
+      setLoading(false);
+      setTeam(null);
+      setTeamGames([]);
+      setMemberships([]);
+      setMyMembership(null);
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -63,10 +72,17 @@ export default function TeamDetail() {
       ]);
       setTeam(teamData);
       setTeamGames(games);
-      setMemberships(memberData.memberships);
+      setMemberships(memberData.memberships ?? []);
       setMyMembership(memberData.my_membership);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Unable to load team.');
+      const status = err.response?.status;
+      if (status === 404) {
+        setError('Team not found or you do not have access.');
+      } else if (status === 403) {
+        setError('You do not have access to this team.');
+      } else {
+        setError(err.response?.data?.detail || 'Unable to load team.');
+      }
     } finally {
       setLoading(false);
     }
@@ -107,6 +123,24 @@ export default function TeamDetail() {
 
   if (loading) {
     return <Page title="Team"><p>Loading...</p></Page>;
+  }
+
+  if (!teamId || teamId === 'undefined') {
+    return (
+      <Page title="Team" actions={<BackButton fallback="/dashboard" />}>
+        <Alert variant="warning" className="mb-0">
+          This team link is invalid. Go back to the dashboard or open a team from the menu.
+        </Alert>
+      </Page>
+    );
+  }
+
+  if (error && !team) {
+    return (
+      <Page title="Team" actions={<BackButton fallback="/dashboard" />}>
+        <Alert variant="warning" className="mb-0">{error}</Alert>
+      </Page>
+    );
   }
 
   return (
