@@ -12,6 +12,8 @@ from teams.models import (
     TeamMigrationRequest,
     TeamMigrationStatus,
 )
+from accounts.models import PasswordResetRequest, PasswordResetRequestStatus
+from teams.services.migration import ACTIVE_MIGRATION_STATUSES
 
 
 def _inbox_item(
@@ -226,11 +228,91 @@ class RequestInboxView(APIView):
 
         reviewed.sort(key=lambda item: item['created_at'], reverse=True)
 
-        for item in pending + reviewed:
+        sent = []
+
+        user_org_joins = OrgJoinRequest.objects.filter(
+            user=user,
+        ).select_related('organization')
+        for join_request in user_org_joins:
+            sent.append(_inbox_item(
+                item_type='org_join',
+                request_id=join_request.id,
+                title=join_request.organization.name,
+                subtitle='Organization join request',
+                created_at=join_request.updated_at if join_request.status != OrgJoinRequestStatus.PENDING else join_request.created_at,
+                status=join_request.status,
+                org_id=join_request.organization_id,
+                action='cancel' if join_request.status == OrgJoinRequestStatus.PENDING else 'view',
+            ))
+
+        user_team_joins = TeamJoinRequest.objects.filter(
+            user=user,
+        ).select_related('team', 'team__organization')
+        for join_request in user_team_joins:
+            sent.append(_inbox_item(
+                item_type='team_join',
+                request_id=join_request.id,
+                title=join_request.team.name,
+                subtitle=f'Team join request · {join_request.team.organization.name}',
+                created_at=join_request.updated_at if join_request.status != JoinRequestStatus.PENDING else join_request.created_at,
+                status=join_request.status,
+                team_id=join_request.team_id,
+                action='cancel' if join_request.status == JoinRequestStatus.PENDING else 'view',
+            ))
+
+        sent_team_invites = TeamInvite.objects.filter(
+            invited_by=user,
+        ).select_related('invited_user', 'team', 'team__organization')
+        for invite in sent_team_invites:
+            sent.append(_inbox_item(
+                item_type='team_invite',
+                request_id=invite.id,
+                title=invite.invited_user.username,
+                subtitle=f'Team invite · {invite.team.name}',
+                created_at=invite.updated_at if invite.status != JoinRequestStatus.PENDING else invite.created_at,
+                status=invite.status,
+                team_id=invite.team_id,
+                action='cancel' if invite.status == JoinRequestStatus.PENDING else 'view',
+            ))
+
+        user_migrations = TeamMigrationRequest.objects.filter(
+            requested_by=user,
+        ).select_related('team', 'source_organization', 'target_organization')
+        for migration_request in user_migrations:
+            sent.append(_inbox_item(
+                item_type='team_migration',
+                request_id=migration_request.id,
+                title=migration_request.team.name,
+                subtitle=(
+                    f'Move to {migration_request.target_organization.name}'
+                    f' · from {migration_request.source_organization.name}'
+                ),
+                created_at=migration_request.updated_at,
+                status=migration_request.status,
+                team_id=migration_request.team_id,
+                action='cancel' if migration_request.status in ACTIVE_MIGRATION_STATUSES else 'view',
+            ))
+
+        user_password_resets = PasswordResetRequest.objects.filter(user=user)
+        for reset_request in user_password_resets:
+            sent.append(_inbox_item(
+                item_type='password_reset',
+                request_id=reset_request.id,
+                title=user.username,
+                subtitle='Password reset request',
+                created_at=reset_request.updated_at if reset_request.status != PasswordResetRequestStatus.PENDING else reset_request.created_at,
+                status=reset_request.status,
+                action='view',
+            ))
+
+        sent.sort(key=lambda item: item['created_at'], reverse=True)
+
+        for item in pending + reviewed + sent:
             item['created_at'] = item['created_at'].isoformat()
 
         return Response({
             'pending_count': len(pending),
             'pending': pending,
             'reviewed': reviewed,
+            'sent': sent,
         })

@@ -25,6 +25,14 @@ export const getOrgJoinRequests = async (orgId) => {
   return response.data;
 };
 
+export const cancelOrgJoinRequest = async (orgId, requestId) => {
+  const response = await apiClient.patch(
+    `/organizations/${orgId}/join-requests/${requestId}/`,
+    { action: 'cancel' },
+  );
+  return response.data;
+};
+
 export const reviewOrgJoinRequest = async (orgId, requestId, payload) => {
   const response = await apiClient.patch(
     `/organizations/${orgId}/join-requests/${requestId}/`,

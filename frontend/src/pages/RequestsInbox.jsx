@@ -13,6 +13,8 @@ function requestTypeLabel(type) {
   if (type === 'org_join') return 'Organization join';
   if (type === 'team_join') return 'Team join';
   if (type === 'team_invite') return 'Team invite';
+  if (type === 'team_migration') return 'Team move';
+  if (type === 'password_reset') return 'Password reset';
   if (type === 'outgoing_team_migration') return 'Team move (outgoing)';
   if (type === 'incoming_team_migration') return 'Team move (incoming)';
   return type;
@@ -20,8 +22,14 @@ function requestTypeLabel(type) {
 
 function statusBadge(status) {
   if (status === 'pending') return <Badge bg="warning" text="dark">Pending</Badge>;
-  if (status === 'approved') return <Badge bg="success">Approved</Badge>;
+  if (status === 'pending_source' || status === 'pending_target') {
+    return <Badge bg="warning" text="dark">Pending</Badge>;
+  }
+  if (status === 'approved' || status === 'completed') {
+    return <Badge bg="success">{status === 'completed' ? 'Completed' : 'Approved'}</Badge>;
+  }
   if (status === 'rejected') return <Badge bg="danger">Rejected</Badge>;
+  if (status === 'cancelled') return <Badge bg="secondary">Cancelled</Badge>;
   return <Badge bg="secondary">{status}</Badge>;
 }
 
@@ -30,7 +38,15 @@ function formatDate(isoString) {
   return new Date(isoString).toLocaleString();
 }
 
-function InboxList({ items, emptyMessage, onReview, onRespond, busy, showActions = false }) {
+function InboxList({
+  items,
+  emptyMessage,
+  onReview,
+  onRespond,
+  onCancel,
+  busy,
+  showActions = false,
+}) {
   if (items.length === 0) {
     return <p className="dashboard-empty-copy mb-0">{emptyMessage}</p>;
   }
@@ -48,7 +64,7 @@ function InboxList({ items, emptyMessage, onReview, onRespond, busy, showActions
             <div className="inbox-item-meta">{item.subtitle}</div>
             <div className="inbox-item-meta">{formatDate(item.created_at)}</div>
           </div>
-          {showActions && (
+          {showActions && item.action !== 'view' && (
             <div className="inbox-item-actions">
               {item.action === 'respond' ? (
                 <>
@@ -71,6 +87,16 @@ function InboxList({ items, emptyMessage, onReview, onRespond, busy, showActions
                     Decline
                   </Button>
                 </>
+              ) : item.action === 'cancel' ? (
+                <Button
+                  size="sm"
+                  variant="outline-danger"
+                  className="team-member-history-btn"
+                  disabled={busy}
+                  onClick={() => onCancel(item)}
+                >
+                  Cancel
+                </Button>
               ) : (
                 <>
                   <Button
@@ -105,6 +131,7 @@ export default function RequestsInbox() {
   const { refreshNav } = useNav();
   const [pending, setPending] = useState([]);
   const [reviewed, setReviewed] = useState([]);
+  const [sent, setSent] = useState([]);
   const [view, setView] = useState('pending');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -118,6 +145,7 @@ export default function RequestsInbox() {
       const inbox = await requestsApi.getRequestInbox();
       setPending(inbox.pending || []);
       setReviewed(inbox.reviewed || []);
+      setSent(inbox.sent || []);
     } catch {
       setError('Unable to load requests.');
     } finally {
@@ -170,12 +198,40 @@ export default function RequestsInbox() {
     }
   };
 
+  const handleCancel = async (item) => {
+    setBusy(true);
+    setError('');
+    setSuccess('');
+    try {
+      if (item.type === 'org_join') {
+        await orgApi.cancelOrgJoinRequest(item.org_id, item.id);
+      } else if (item.type === 'team_join') {
+        await teamApi.cancelTeamJoinRequest(item.team_id, item.id);
+      } else if (item.type === 'team_invite') {
+        await teamApi.respondTeamInvite(item.team_id, item.id, 'cancel');
+      } else if (item.type === 'team_migration') {
+        await teamApi.cancelTeamMigrationRequest(item.team_id, item.id);
+      }
+      setSuccess('Request cancelled.');
+      await Promise.all([load(), refreshNav()]);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Unable to cancel request.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return <Page title="Requests"><p className="dashboard-loading">Loading...</p></Page>;
   }
 
-  const isPendingView = view === 'pending';
-  const activeItems = isPendingView ? pending : reviewed;
+  const pendingSentCount = sent.filter((item) => item.action === 'cancel').length;
+  const activeItems = view === 'pending' ? pending : view === 'reviewed' ? reviewed : sent;
+  const introCopy = {
+    pending: 'Organization leaders see org and team move requests. Coaches see team join requests. Invites sent to you appear here too.',
+    reviewed: 'Requests you have already approved, denied, accepted, or declined.',
+    sent: 'Requests and invites you submitted. Cancel pending items here while you wait for a response.',
+  };
 
   return (
     <Page
@@ -190,9 +246,9 @@ export default function RequestsInbox() {
           <Button
             type="button"
             role="tab"
-            aria-selected={isPendingView}
+            aria-selected={view === 'pending'}
             variant="outline-primary"
-            className={`inbox-tab${isPendingView ? ' inbox-tab-active' : ''}`}
+            className={`inbox-tab${view === 'pending' ? ' inbox-tab-active' : ''}`}
             onClick={() => setView('pending')}
           >
             Pending
@@ -203,28 +259,44 @@ export default function RequestsInbox() {
           <Button
             type="button"
             role="tab"
-            aria-selected={!isPendingView}
+            aria-selected={view === 'sent'}
             variant="outline-primary"
-            className={`inbox-tab${!isPendingView ? ' inbox-tab-active' : ''}`}
+            className={`inbox-tab${view === 'sent' ? ' inbox-tab-active' : ''}`}
+            onClick={() => setView('sent')}
+          >
+            Sent
+            {pendingSentCount > 0 && (
+              <Badge bg="secondary" className="inbox-tab-count">{pendingSentCount}</Badge>
+            )}
+          </Button>
+          <Button
+            type="button"
+            role="tab"
+            aria-selected={view === 'reviewed'}
+            variant="outline-primary"
+            className={`inbox-tab${view === 'reviewed' ? ' inbox-tab-active' : ''}`}
             onClick={() => setView('reviewed')}
           >
             Reviewed
           </Button>
         </div>
 
-        <p className="form-page-intro">
-          {isPendingView
-            ? 'Organization leaders see org and team move requests. Coaches see team join requests. Invites sent to you appear here too.'
-            : 'Requests you have already approved, denied, accepted, or declined.'}
-        </p>
+        <p className="form-page-intro">{introCopy[view]}</p>
 
         <InboxList
           items={activeItems}
-          emptyMessage={isPendingView ? 'No pending requests.' : 'No reviewed requests yet.'}
+          emptyMessage={
+            view === 'pending'
+              ? 'No pending requests.'
+              : view === 'sent'
+                ? 'No sent requests yet.'
+                : 'No reviewed requests yet.'
+          }
           onReview={handleReview}
           onRespond={handleRespond}
+          onCancel={handleCancel}
           busy={busy}
-          showActions={isPendingView}
+          showActions={view === 'pending' || view === 'sent'}
         />
       </section>
     </Page>

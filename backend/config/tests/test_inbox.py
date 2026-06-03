@@ -87,3 +87,18 @@ class RequestInboxTests(TestCase):
         self.assertIn('org_join', pending_types)
         self.assertIn('team_join', pending_types)
         self.assertEqual(response.data['pending_count'], 2)
+
+    def test_user_sees_sent_org_join_request(self):
+        OrgJoinRequest.objects.create(
+            user=self.applicant,
+            organization=self.source_org,
+            status=OrgJoinRequestStatus.PENDING,
+        )
+
+        self.client.force_authenticate(user=self.applicant)
+        response = self.client.get('/api/requests/inbox/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['sent']), 1)
+        self.assertEqual(response.data['sent'][0]['type'], 'org_join')
+        self.assertEqual(response.data['sent'][0]['action'], 'cancel')
