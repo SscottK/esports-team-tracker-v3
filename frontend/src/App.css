@@ -1322,25 +1322,34 @@ html[data-color-mode='light'] .esports-page .alert-warning {
 }
 
 /* Times grid page */
-.times-grid-toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.85rem 1.25rem;
-}
-
-@media (min-width: 768px) {
-  .times-grid-toolbar {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1.25rem 2rem;
-  }
-}
-
 .times-grid-toggle .form-check-label {
   color: var(--esports-text);
   font-size: 0.9rem;
+}
+
+.times-grid-section-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.times-grid-section-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .times-grid-section-toggles {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem 1.5rem;
+  }
 }
 
 .times-grid-accordion {

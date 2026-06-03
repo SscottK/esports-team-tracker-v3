@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Page from '../components/Page';
 import BackButton from '../components/BackButton';
+import PageLinksMenu from '../components/PageLinksMenu';
 import TimesGridTable, { LeaderboardTable, MobileGridCards } from '../components/TimesGridTable';
 import { useNav } from '../context/NavContext';
 import { activityLabel } from '../utils/gameLabels';
@@ -83,26 +84,27 @@ export default function TimesGrid() {
     }
   };
 
+  const gridPageLinks = [
+    { label: 'Compare', to: `/teams/${teamId}/games/${gameId}/compare` },
+    { label: 'Time history', to: `/teams/${teamId}/time-history?game=${gameId}` },
+  ];
+  if (viewer?.can_add_time) {
+    gridPageLinks.push({ label: 'Add time', to: `/teams/${teamId}/add-time?game=${gameId}` });
+  }
+  if (viewer?.is_coach) {
+    gridPageLinks.push({ label: 'Upload CSV', to: `/teams/${teamId}/upload-times?game=${gameId}` });
+  }
+
   return (
     <Page
       title={grid ? `${teamName} — ${grid.game.name}` : 'Times grid'}
       className="dashboard-page"
       actions={(
-        <div className="page-header-actions">
-          <Button as={Link} to={`/teams/${teamId}/games/${gameId}/compare`} variant="outline-primary" size="sm">
-            Compare
-          </Button>
-          <Button as={Link} to={`/teams/${teamId}/time-history?game=${gameId}`} variant="outline-primary" size="sm">
-            Time history
-          </Button>
-          {viewer?.can_add_time && (
-            <Button as={Link} to={`/teams/${teamId}/add-time?game=${gameId}`} variant="outline-primary" size="sm">
-              Add time
-            </Button>
-          )}
+        <div className="page-header-actions page-header-actions--compact">
+          <PageLinksMenu label="More pages" links={gridPageLinks} />
           {viewer?.is_coach && (
-            <Button as={Link} to={`/teams/${teamId}/upload-times?game=${gameId}`} variant="outline-primary" size="sm">
-              Upload CSV
+            <Button as={Link} to={`/teams/${teamId}/coach`} variant="outline-primary" size="sm">
+              Coach tools
             </Button>
           )}
           <BackButton fallback="/dashboard" />
@@ -135,31 +137,6 @@ export default function TimesGrid() {
         <div className="dashboard-loading">Loading grid...</div>
       ) : grid ? (
         <>
-          {showGridToggles && (
-            <section className="esports-panel times-grid-toolbar mb-3">
-              {viewer?.can_toggle_dlc && (
-                <Form.Check
-                  type="switch"
-                  id="include-dlc-tracks"
-                  className="times-grid-toggle mb-0"
-                  label="Show DLC tracks (Booster Course Pass)"
-                  checked={includeDlc}
-                  onChange={(e) => setIncludeDlc(e.target.checked)}
-                />
-              )}
-              {viewer?.can_toggle_coach_competitors && (
-                <Form.Check
-                  type="switch"
-                  id="include-coach-competitors"
-                  className="times-grid-toggle mb-0"
-                  label="Show coach times (coaches who also compete)"
-                  checked={includeCoachCompetitors}
-                  onChange={(e) => setIncludeCoachCompetitors(e.target.checked)}
-                />
-              )}
-            </section>
-          )}
-
           <section className="esports-panel times-grid-accordion mb-3">
             <button
               type="button"
@@ -179,10 +156,36 @@ export default function TimesGrid() {
 
           <section className="esports-panel times-grid-main-panel">
             <div className="times-grid-section-head">
-              <h2 className="dashboard-panel-title">{trackLabel} times</h2>
+              <div className="times-grid-section-head-row">
+                <h2 className="dashboard-panel-title mb-0">{trackLabel} times</h2>
+                {showGridToggles && (
+                  <div className="times-grid-section-toggles">
+                    {viewer?.can_toggle_dlc && (
+                      <Form.Check
+                        type="switch"
+                        id="include-dlc-tracks"
+                        className="times-grid-toggle mb-0"
+                        label="Show DLC tracks (Booster Course Pass)"
+                        checked={includeDlc}
+                        onChange={(e) => setIncludeDlc(e.target.checked)}
+                      />
+                    )}
+                    {viewer?.can_toggle_coach_competitors && (
+                      <Form.Check
+                        type="switch"
+                        id="include-coach-competitors"
+                        className="times-grid-toggle mb-0"
+                        label="Show coach times (coaches who also compete)"
+                        checked={includeCoachCompetitors}
+                        onChange={(e) => setIncludeCoachCompetitors(e.target.checked)}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
               <p className="dashboard-panel-meta mb-0">
                 DLC tracks show by default. Turn off the toggle to hide Booster Course Pass cups.
-                Only competing team members are shown unless coach times are toggled above.
+                Only competing team members are shown unless coach times are enabled.
               </p>
             </div>
 
