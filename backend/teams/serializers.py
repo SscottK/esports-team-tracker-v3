@@ -3,6 +3,7 @@ from rest_framework import serializers
 from games.models import Game
 from games.serializers import GameSerializer
 from teams.models import CoachRole, JoinRequestStatus, Team, TeamGame, TeamJoinRequest, TeamMembership, TeamMigrationRequest
+from teams.theme_constants import normalize_hex_color
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -10,13 +11,41 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ['id', 'organization', 'organization_name', 'name', 'color_theme', 'created_at']
+        fields = [
+            'id',
+            'organization',
+            'organization_name',
+            'name',
+            'color_theme',
+            'primary_color',
+            'secondary_color',
+            'tertiary_color',
+            'created_at',
+        ]
 
 
 class UpdateTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['color_theme']
+        fields = ['primary_color', 'secondary_color', 'tertiary_color']
+
+    def validate_primary_color(self, value):
+        normalized = normalize_hex_color(value, '')
+        if not normalized:
+            raise serializers.ValidationError('Enter a valid hex color like #22d3ee.')
+        return normalized
+
+    def validate_secondary_color(self, value):
+        normalized = normalize_hex_color(value, '')
+        if not normalized:
+            raise serializers.ValidationError('Enter a valid hex color like #38bdf8.')
+        return normalized
+
+    def validate_tertiary_color(self, value):
+        normalized = normalize_hex_color(value, '')
+        if not normalized:
+            raise serializers.ValidationError('Enter a valid hex color like #f472b6.')
+        return normalized
 
 
 class TeamMembershipSerializer(serializers.ModelSerializer):

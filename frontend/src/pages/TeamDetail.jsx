@@ -148,11 +148,6 @@ export default function TeamDetail() {
       title={team?.name || 'Team'}
       actions={(
         <div className="page-header-actions">
-          {isCoach && (
-            <Button as={Link} to={`/teams/${teamId}/coach`} variant="outline-primary" size="sm">
-              Coach tools
-            </Button>
-          )}
           <BackButton fallback="/dashboard" />
         </div>
       )}
@@ -172,6 +167,11 @@ export default function TeamDetail() {
               You are a <strong>{roleLabel(myMembership)}</strong>
             </span>
           </div>
+          {isCoach && (
+            <Button as={Link} to={`/teams/${teamId}/coach`} variant="outline-primary" size="sm">
+              Coach tools
+            </Button>
+          )}
           {isCoach && !myMembership.is_competing_member && (
             <span className="team-detail-meta-hint">
               Mark yourself as competing in Coach tools to appear on the times grid

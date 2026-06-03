@@ -8,11 +8,7 @@ import {
 } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNav } from './NavContext';
-import {
-  DEFAULT_TEAM_COLOR_THEME,
-  TEAM_COLOR_THEMES,
-  normalizeTeamColorTheme,
-} from '../utils/teamThemes';
+import { applyTeamColorsToRoot, resolveTeamColors } from '../utils/teamThemes';
 
 const COLOR_MODE_KEY = 'estt_color_mode';
 const PREFERRED_TEAM_KEY = 'estt_preferred_team_id';
@@ -54,7 +50,7 @@ export function ThemeProvider({ children }) {
     [teams, activeTeamId],
   );
 
-  const teamColorTheme = normalizeTeamColorTheme(activeTeam?.color_theme);
+  const teamColors = useMemo(() => resolveTeamColors(activeTeam), [activeTeam]);
 
   useEffect(() => {
     if (routeTeamId) {
@@ -66,16 +62,9 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.colorMode = colorMode;
-    root.dataset.teamTheme = teamColorTheme;
     localStorage.setItem(COLOR_MODE_KEY, colorMode);
-
-    const palette = TEAM_COLOR_THEMES[teamColorTheme];
-    root.style.setProperty('--esports-accent', palette.accent);
-    root.style.setProperty('--esports-accent-soft', palette.accentSoft);
-    root.style.setProperty('--esports-panel-border', palette.panelBorder);
-    root.style.setProperty('--esports-magenta', palette.magenta);
-    root.style.setProperty('--esports-glow', palette.glow);
-  }, [colorMode, teamColorTheme]);
+    applyTeamColorsToRoot(root, teamColors);
+  }, [colorMode, teamColors]);
 
   const toggleColorMode = useCallback(() => {
     setColorMode((current) => (current === 'dark' ? 'light' : 'dark'));
@@ -85,11 +74,11 @@ export function ThemeProvider({ children }) {
     () => ({
       colorMode,
       toggleColorMode,
-      teamColorTheme,
+      teamColors,
       activeTeamId,
       activeTeam,
     }),
-    [colorMode, toggleColorMode, teamColorTheme, activeTeamId, activeTeam],
+    [colorMode, toggleColorMode, teamColors, activeTeamId, activeTeam],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

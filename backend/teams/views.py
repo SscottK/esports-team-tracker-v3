@@ -82,10 +82,14 @@ class TeamViewSet(viewsets.ModelViewSet):
                 {'detail': 'Only head coaches can update team settings.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        extra_fields = set(request.data.keys()) - {'color_theme'}
+        extra_fields = set(request.data.keys()) - {
+            'primary_color',
+            'secondary_color',
+            'tertiary_color',
+        }
         if extra_fields:
             return Response(
-                {'detail': 'Only color_theme can be updated.'},
+                {'detail': 'Only primary_color, secondary_color, and tertiary_color can be updated.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         serializer = self.get_serializer(team, data=request.data, partial=True)
@@ -208,6 +212,9 @@ class OrgTeamsView(APIView):
                 'organization_name': team.organization.name,
                 'name': team.name,
                 'color_theme': team.color_theme,
+                'primary_color': team.primary_color,
+                'secondary_color': team.secondary_color,
+                'tertiary_color': team.tertiary_color,
                 'created_at': team.created_at,
                 'is_member': team.id in member_team_ids,
                 'pending_join_request_id': pending_requests.get(team.id),

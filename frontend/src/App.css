@@ -3,7 +3,11 @@
   --esports-panel: #111827;
   --esports-panel-border: rgba(56, 189, 248, 0.22);
   --esports-accent: #22d3ee;
+  --esports-secondary: #38bdf8;
+  --esports-tertiary: #f472b6;
   --esports-accent-soft: rgba(34, 211, 238, 0.12);
+  --esports-secondary-soft: rgba(56, 189, 248, 0.12);
+  --esports-tertiary-soft: rgba(244, 114, 182, 0.12);
   --esports-magenta: #f472b6;
   --esports-glow: rgba(34, 211, 238, 0.08);
   --esports-text: #e5eef9;
@@ -911,7 +915,7 @@ html[data-color-mode='light'] .esports-page .alert-warning {
   padding: 1.25rem 1.5rem;
   border-radius: 1rem;
   background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.12), rgba(244, 114, 182, 0.08)),
+    linear-gradient(135deg, var(--esports-accent-soft), var(--esports-tertiary-soft)),
     var(--esports-panel);
   border: 1px solid var(--esports-panel-border);
 }
@@ -1293,10 +1297,7 @@ html[data-color-mode='light'] .esports-page .alert-warning {
 }
 
 .times-grid-accordion-trigger {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: 0.75rem 1rem;
+  display: block;
   width: 100%;
   padding: 0.95rem 1.25rem;
   border: 0;
@@ -1318,29 +1319,6 @@ html[data-color-mode='light'] .esports-page .alert-warning {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-.times-grid-accordion-meta {
-  color: var(--esports-muted);
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
-
-.times-grid-accordion-chevron {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--esports-accent);
-  font-size: 1.25rem;
-  line-height: 1;
-  transform: rotate(90deg);
-  transition: transform 0.2s ease;
-}
-
-.times-grid-accordion-chevron.is-open {
-  transform: rotate(-90deg);
 }
 
 .times-grid-accordion-body {
@@ -2043,4 +2021,58 @@ html[data-color-mode='light'] .grid-cell-medium {
 
 html[data-color-mode='light'] .grid-cell-slow {
   color: #991b1b !important;
+}
+
+.team-color-preview {
+  height: 4.5rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--esports-panel-border);
+}
+
+.team-color-fields {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.team-color-field {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.85rem;
+  background: var(--esports-surface);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+@media (min-width: 768px) {
+  .team-color-field {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+    align-items: center;
+  }
+}
+
+.team-color-field-inputs {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.team-color-input-swatch {
+  width: 3.25rem;
+  height: 2.5rem;
+  padding: 0.15rem;
+  cursor: pointer;
+}
+
+.team-color-input-hex {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.team-theme-swatches {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.team-detail-meta .btn {
+  flex-shrink: 0;
 }

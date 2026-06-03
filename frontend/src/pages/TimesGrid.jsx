@@ -76,9 +76,6 @@ export default function TimesGrid() {
   const trackLabel = activityLabel(grid?.game, true);
   const showTeamSwitcher = teamsWithGame.length > 1;
   const showGridToggles = viewer?.can_toggle_dlc || viewer?.can_toggle_coach_competitors;
-  const leaderboardSummary = leaderboard.length > 0
-    ? `${leaderboard.length} ranked`
-    : 'No times yet';
 
   const handleTeamChange = (nextTeamId) => {
     if (String(nextTeamId) !== String(teamId)) {
@@ -172,13 +169,6 @@ export default function TimesGrid() {
               aria-controls="times-grid-leaderboard-panel"
             >
               <span className="times-grid-accordion-title">Leaderboard</span>
-              <span className="times-grid-accordion-meta">{leaderboardSummary}</span>
-              <span
-                className={`times-grid-accordion-chevron${showLeaderboard ? ' is-open' : ''}`}
-                aria-hidden="true"
-              >
-                ›
-              </span>
             </button>
             {showLeaderboard && (
               <div id="times-grid-leaderboard-panel" className="times-grid-accordion-body">

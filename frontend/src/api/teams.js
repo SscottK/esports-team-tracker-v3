@@ -40,8 +40,8 @@ export const getTeam = async (teamId) => {
   return response.data;
 };
 
-export const updateTeamTheme = async (teamId, colorTheme) => {
-  const response = await apiClient.patch(`/teams/${teamId}/`, { color_theme: colorTheme });
+export const updateTeamColors = async (teamId, colors) => {
+  const response = await apiClient.patch(`/teams/${teamId}/`, colors);
   return response.data;
 };
 

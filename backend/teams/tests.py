@@ -313,19 +313,29 @@ class TeamColorThemeTests(TestCase):
         self.client.force_authenticate(user=self.head)
         response = self.client.patch(
             f'/api/teams/{self.team.id}/',
-            {'color_theme': 'emerald'},
+            {
+                'primary_color': '#34d399',
+                'secondary_color': '#2dd4bf',
+                'tertiary_color': '#60a5fa',
+            },
             format='json',
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['color_theme'], 'emerald')
+        self.assertEqual(response.data['primary_color'], '#34d399')
+        self.assertEqual(response.data['secondary_color'], '#2dd4bf')
+        self.assertEqual(response.data['tertiary_color'], '#60a5fa')
         self.team.refresh_from_db()
-        self.assertEqual(self.team.color_theme, 'emerald')
+        self.assertEqual(self.team.primary_color, '#34d399')
 
     def test_member_cannot_update_color_theme(self):
         self.client.force_authenticate(user=self.member)
         response = self.client.patch(
             f'/api/teams/{self.team.id}/',
-            {'color_theme': 'violet'},
+            {
+                'primary_color': '#a78bfa',
+                'secondary_color': '#818cf8',
+                'tertiary_color': '#f472b6',
+            },
             format='json',
         )
         self.assertEqual(response.status_code, 403)

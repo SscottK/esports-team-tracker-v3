@@ -32,6 +32,9 @@ class Team(models.Model):
         choices=TeamColorTheme.choices,
         default=TeamColorTheme.CYAN,
     )
+    primary_color = models.CharField(max_length=7, default='#22d3ee')
+    secondary_color = models.CharField(max_length=7, default='#38bdf8')
+    tertiary_color = models.CharField(max_length=7, default='#f472b6')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
