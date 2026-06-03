@@ -145,7 +145,12 @@ export default function TimesGrid() {
               aria-expanded={showLeaderboard}
               aria-controls="times-grid-leaderboard-panel"
             >
-              <span className="times-grid-accordion-title">Leaderboard</span>
+              <span className="times-grid-accordion-header">
+                <span className="times-grid-accordion-title">Leaderboard</span>
+                <span className="times-grid-accordion-hint">
+                  {showLeaderboard ? 'Click to hide' : 'Click to see leaderboard'}
+                </span>
+              </span>
             </button>
             {showLeaderboard && (
               <div id="times-grid-leaderboard-panel" className="times-grid-accordion-body">

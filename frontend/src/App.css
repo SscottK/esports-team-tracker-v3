@@ -1382,6 +1382,21 @@ html[data-color-mode='light'] .esports-page .alert-warning {
   text-transform: uppercase;
 }
 
+.times-grid-accordion-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+
+.times-grid-accordion-hint {
+  color: var(--esports-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 .times-grid-accordion-body {
   padding: 0 1.25rem 1.15rem;
   border-top: 1px solid rgba(148, 163, 184, 0.15);
