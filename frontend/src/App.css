@@ -2111,7 +2111,6 @@ html[data-color-mode='light'] .server-wake-overlay {
 .inbox-layout-staff {
   display: grid;
   gap: 1.75rem;
-  max-width: 58rem;
 }
 
 .inbox-layout-staff .inbox-section + .inbox-section {
@@ -2123,6 +2122,37 @@ html[data-color-mode='light'] .server-wake-overlay {
     grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
     gap: 1.25rem;
     align-items: start;
+    max-width: 58rem;
+  }
+
+  .inbox-layout-staff .inbox-section-panel {
+    padding: 0.85rem 1rem;
+  }
+
+  .inbox-layout-staff .inbox-section-intro {
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .inbox-layout-staff .inbox-tabs {
+    gap: 0.35rem;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.65rem;
+  }
+
+  .inbox-layout-staff .inbox-tab {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 0.35rem 0.45rem;
+    font-size: 0.78rem;
+  }
+
+  .inbox-layout-staff .admin-queue-link {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .inbox-layout-staff .admin-queue-link-label {
+    font-size: 0.88rem;
   }
 }
 
@@ -2133,36 +2163,6 @@ html[data-color-mode='light'] .server-wake-overlay {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-.inbox-layout-staff .inbox-section-panel {
-  padding: 0.85rem 1rem;
-}
-
-.inbox-layout-staff .inbox-section-intro {
-  margin-bottom: 0.75rem;
-  font-size: 0.8rem;
-}
-
-.inbox-layout-staff .inbox-tabs {
-  gap: 0.35rem;
-  margin-bottom: 0.65rem;
-  padding-bottom: 0.65rem;
-}
-
-.inbox-layout-staff .inbox-tab {
-  min-width: 0;
-  flex: 1 1 0;
-  padding: 0.35rem 0.45rem;
-  font-size: 0.78rem;
-}
-
-.inbox-layout-staff .admin-queue-link {
-  padding: 0.6rem 0.75rem;
-}
-
-.inbox-layout-staff .admin-queue-link-label {
-  font-size: 0.88rem;
 }
 
 .admin-queue-list {
