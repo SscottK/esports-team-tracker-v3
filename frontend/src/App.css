@@ -1732,6 +1732,71 @@ html[data-color-mode='light'] .server-wake-overlay {
   background: rgba(255, 255, 255, 0.02);
 }
 
+.mobile-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mobile-leaderboard-card {
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.75rem;
+  background: var(--esports-surface);
+}
+
+.mobile-leaderboard-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.mobile-leaderboard-rank {
+  flex-shrink: 0;
+  min-width: 2rem;
+  color: var(--esports-accent);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.mobile-leaderboard-name {
+  color: var(--esports-text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.mobile-leaderboard-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem 0.75rem;
+  margin: 0;
+}
+
+.mobile-leaderboard-stat {
+  min-width: 0;
+}
+
+.mobile-leaderboard-stat dt {
+  margin: 0 0 0.15rem;
+  color: var(--esports-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mobile-leaderboard-stat dd {
+  margin: 0;
+  color: var(--esports-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .mobile-grid-cards {
   display: flex;
   flex-direction: column;
@@ -2417,9 +2482,67 @@ html[data-color-mode='light'] .server-wake-overlay {
   gap: 0.85rem;
 }
 
+.history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-item-row {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.history-item-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.history-item-row:first-child {
+  padding-top: 0;
+}
+
+.history-item-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.2rem;
+}
+
+.history-item-track {
+  min-width: 0;
+  color: var(--esports-text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.history-item-time {
+  flex-shrink: 0;
+  color: var(--esports-accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.history-item-meta {
+  color: var(--esports-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 @media (min-width: 768px) {
   .history-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .history-item-row {
+    padding: 0.7rem 0;
+  }
+
+  .history-item-track {
+    font-size: 0.92rem;
   }
 }
 

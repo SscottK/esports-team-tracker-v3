@@ -204,6 +204,41 @@ export function MobileGridCards({ grid }) {
   );
 }
 
+function MobileLeaderboardCards({ leaderboard, game }) {
+  const trackLabel = activityLabel(game, true);
+
+  return (
+    <div className="d-md-none mobile-leaderboard-list">
+      {leaderboard.map((row) => (
+        <article key={row.member_id} className="mobile-leaderboard-card">
+          <div className="mobile-leaderboard-head">
+            <span className="mobile-leaderboard-rank">#{row.position}</span>
+            <span className="mobile-leaderboard-name">{row.username}</span>
+          </div>
+          <dl className="mobile-leaderboard-stats">
+            <div className="mobile-leaderboard-stat">
+              <dt>{trackLabel}</dt>
+              <dd>{row.completed}/{row.total_tracks}</dd>
+            </div>
+            <div className="mobile-leaderboard-stat">
+              <dt>Par 1</dt>
+              <dd>{row.par1_pct}%</dd>
+            </div>
+            <div className="mobile-leaderboard-stat">
+              <dt>Par 2</dt>
+              <dd>{row.par2_pct}%</dd>
+            </div>
+            <div className="mobile-leaderboard-stat">
+              <dt>Done</dt>
+              <dd>{row.completion_pct}%</dd>
+            </div>
+          </dl>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export function LeaderboardTable({ leaderboard, game }) {
   if (!leaderboard?.length) {
     return <p className="dashboard-empty-copy mb-0">No times recorded yet.</p>;
@@ -212,31 +247,34 @@ export function LeaderboardTable({ leaderboard, game }) {
   const trackLabel = activityLabel(game, true);
 
   return (
-    <div className="grid-scroll-wrapper">
-      <table className="table table-sm times-grid leaderboard-table mb-0">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Team member</th>
-            <th>{trackLabel}</th>
-            <th>Par 1 %</th>
-            <th>Par 2 %</th>
-            <th>Done %</th>
-          </tr>
-        </thead>
-        <tbody>
-          {leaderboard.map((row) => (
-            <tr key={row.member_id}>
-              <td>{row.position}</td>
-              <td>{row.username}</td>
-              <td>{row.completed}/{row.total_tracks}</td>
-              <td>{row.par1_pct}%</td>
-              <td>{row.par2_pct}%</td>
-              <td>{row.completion_pct}%</td>
+    <>
+      <div className="d-none d-md-block grid-scroll-wrapper">
+        <table className="table table-sm times-grid leaderboard-table mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Team member</th>
+              <th>{trackLabel}</th>
+              <th>Par 1 %</th>
+              <th>Par 2 %</th>
+              <th>Done %</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {leaderboard.map((row) => (
+              <tr key={row.member_id}>
+                <td>{row.position}</td>
+                <td>{row.username}</td>
+                <td>{row.completed}/{row.total_tracks}</td>
+                <td>{row.par1_pct}%</td>
+                <td>{row.par2_pct}%</td>
+                <td>{row.completion_pct}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <MobileLeaderboardCards leaderboard={leaderboard} game={game} />
+    </>
   );
 }

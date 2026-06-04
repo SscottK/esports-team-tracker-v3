@@ -4,9 +4,23 @@ import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
-import { activityLabel } from '../utils/gameLabels';
 import * as performancesApi from '../api/performances';
 import * as teamApi from '../api/teams';
+
+function formatShortDate(isoString) {
+  return new Date(isoString).toLocaleString(undefined, {
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function formatTrackLabel(entry) {
+  return entry.level_group_name
+    ? `${entry.level_group_name} · ${entry.level_name}`
+    : entry.level_name;
+}
 
 export default function TimeHistory() {
   const { teamId } = useParams();
@@ -29,11 +43,6 @@ export default function TimeHistory() {
     () => memberships.find((membership) => String(membership.user_id) === String(userId)),
     [memberships, userId],
   );
-  const selectedGame = useMemo(
-    () => teamGames.find(({ game }) => String(game.id) === String(gameId))?.game,
-    [teamGames, gameId],
-  );
-  const trackLabel = activityLabel(selectedGame, false);
   const pageTitle = useMemo(() => {
     if (!teamName) return 'Time history';
     if (selectedMember && (isCoach || selectedMember.user_id === myMembership?.user_id)) {
@@ -133,33 +142,25 @@ export default function TimeHistory() {
       ) : history.length === 0 ? (
         <Alert variant="info">No time submissions yet for these filters.</Alert>
       ) : (
-        <div className="grid-scroll-wrapper">
-          <table className="table table-sm table-striped mb-0">
-            <thead>
-              <tr>
-                <th>When</th>
-                <th>{trackLabel || 'Track'}</th>
-                <th>Time</th>
-                <th>Entered by</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((entry) => (
-                <tr key={entry.id}>
-                  <td className="text-nowrap dashboard-history-date">
-                    {new Date(entry.created_at).toLocaleString()}
-                  </td>
-                  <td className="dashboard-history-track">
-                    {entry.level_group_name ? `${entry.level_group_name} — ` : ''}
-                    {entry.level_name}
-                  </td>
-                  <td className="text-center dashboard-history-time">{entry.display_value}</td>
-                  <td>{entry.entered_by_username}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <section className="esports-panel form-page-panel">
+          <div className="history-list">
+            {history.map((entry) => (
+              <div key={entry.id} className="history-item-row">
+                <div className="history-item-main">
+                  <div className="history-item-title">
+                    <span className="history-item-track">{formatTrackLabel(entry)}</span>
+                    <span className="history-item-time">{entry.display_value}</span>
+                  </div>
+                  <div className="history-item-meta">
+                    {formatShortDate(entry.created_at)}
+                    {' · '}
+                    Entered by {entry.entered_by_username}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
     </Page>
   );
