@@ -89,6 +89,8 @@ curl https://esports-team-tracker-v3-api.onrender.com/api/health/
 |-----|--------|
 | `VITE_API_URL` | `https://esports-team-tracker-v3-api.onrender.com` (no trailing slash) |
 
+**Render Postgres (production):** use **Basic-256mb** or higher — free databases expire after 30 days.
+
 Redeploy after changing `VITE_*` (baked at build time).
 
 `frontend/vercel.json` rewrites routes to `index.html` for React Router.
@@ -101,7 +103,7 @@ Use [BETA.md](./BETA.md). Minimum:
 
 - [ ] Sign up / sign in on [esports-team-tracker.vercel.app](https://esports-team-tracker.vercel.app)
 - [ ] No CORS errors in browser devtools → Network
-- [ ] Cold-start overlay appears after API idle, then app loads
+- [ ] Health check responds: `curl https://esports-team-tracker-v3-api.onrender.com/api/health/`
 
 ---
 

@@ -14,7 +14,7 @@ Deploy details: [DEPLOY.md](./DEPLOY.md) · Future work: [ROADMAP.md](./ROADMAP.
 - Times are per team; the same user on two teams has separate histories.
 - Every team member is a **real user account** — roster is not display-only names.
 - One org per user; leave before joining another org
-- Render **starter** tier may sleep the API; first load can take up to ~1 minute (startup overlay + retry).
+- **Production hosting:** API on Render **Starter** (always on) and Postgres on **Basic-256mb** (no 30-day expiry). First load after a deploy may still take a moment while services restart.
 
 ## Requests inbox coverage
 
@@ -43,8 +43,8 @@ Team invite accept rules: user not in any org → join org + team; same org → 
 - [ ] Notification bell → `/requests`
 - [ ] Dark / light mode toggle in header
 
-### Cold start (Render starter)
-- [ ] After idle period, first visit shows “Powering up the server” overlay
+### Cold start (Render)
+- [ ] After API redeploy, first visit may show “Powering up the server” overlay briefly
 - [ ] App recovers without manual refresh once API is up
 
 ### Organization flow
