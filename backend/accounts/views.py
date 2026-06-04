@@ -32,6 +32,11 @@ class HealthView(APIView):
 
     def get(self, request):
         payload = {'status': 'ok'}
+        if request.query_params.get('runtime') == '1':
+            import sys
+            payload['python'] = sys.version
+            from django import get_version
+            payload['django'] = get_version()
         if request.query_params.get('migrations') == '1':
             unapplied = _unapplied_migrations()
             payload['unapplied_migrations'] = unapplied

@@ -40,7 +40,7 @@ Repo: `SscottK/esports-team-tracker-v3`, branch `main` (auto-deploy on push).
 | Field | Value |
 |-------|--------|
 | **Root Directory** | `backend` |
-| **Runtime** | Python 3 |
+| **Runtime** | Python 3.12 (`runtime.txt` + `PYTHON_VERSION=3.12.8`) |
 | **Build Command** | `./build.sh` |
 | **Start Command** | `./start.sh` |
 
@@ -49,6 +49,7 @@ Repo: `SscottK/esports-team-tracker-v3`, branch `main` (auto-deploy on push).
 | Key | Value |
 |-----|--------|
 | `DEBUG` | `False` |
+| `PYTHON_VERSION` | `3.12.8` |
 | `DJANGO_SECRET_KEY` | long random string |
 | `DATABASE_URL` | Internal Postgres URL (must not be blank) |
 | `ALLOWED_HOSTS` | `esports-team-tracker-v3-api.onrender.com` |
@@ -136,4 +137,4 @@ VITE_API_URL=http://127.0.0.1:8000 npm run build && npm run preview
 | API calls go to localhost | Rebuild Vercel after setting `VITE_API_URL` |
 | Empty DATABASE_URL on Render | Delete blank var or paste full Postgres URL |
 | Slow first request | Render starter spin-down; frontend shows wake overlay and retries |
-| Django admin 500 after login | Check `curl .../api/health/?migrations=1` for pending migrations. Redeploy API (uses `start.sh`). Render logs now include request tracebacks. Staff JWT: `GET /api/health/admin/` for per-model changelist errors. |
+| Django admin 500 after login | Usually Python 3.14 + Django 5.1 — pin `PYTHON_VERSION=3.12.8` and `runtime.txt`. Check `curl .../api/health/?runtime=1`. Also set `SECURE_SSL_REDIRECT=False`. |
