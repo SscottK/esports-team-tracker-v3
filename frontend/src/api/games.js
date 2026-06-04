@@ -15,9 +15,9 @@ export const suggestGame = async (gameName) => {
   return response.data;
 };
 
-export const getAdminGameSuggestions = async (pendingOnly = true) => {
+export const getAdminGameSuggestions = async (showReviewed = false) => {
   const response = await apiClient.get('/admin/game-suggestions/', {
-    params: pendingOnly ? { pending: 'true' } : {},
+    params: showReviewed ? { show_reviewed: 'true' } : undefined,
   });
   return response.data;
 };

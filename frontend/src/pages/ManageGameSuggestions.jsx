@@ -26,7 +26,7 @@ export default function ManageGameSuggestions() {
     setError('');
     try {
       const [data, counts] = await Promise.all([
-        gamesApi.getAdminGameSuggestions(view !== 'pending'),
+        gamesApi.getAdminGameSuggestions(view === 'reviewed'),
         adminApi.getAdminPendingCounts(),
       ]);
       setSuggestions(data);

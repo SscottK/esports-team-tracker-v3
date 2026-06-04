@@ -90,7 +90,10 @@ class AdminGameSuggestionViewSet(
 
     def get_queryset(self):
         queryset = GameSuggestion.objects.select_related('suggested_by').order_by('-created_at')
-        if self.request.query_params.get('pending') == 'true':
+        show_reviewed = self.request.query_params.get('show_reviewed', '').lower() in ('1', 'true', 'yes')
+        if show_reviewed:
+            queryset = queryset.filter(is_reviewed=True)
+        else:
             queryset = queryset.filter(is_reviewed=False)
         return queryset
 

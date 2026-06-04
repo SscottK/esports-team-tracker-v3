@@ -38,6 +38,25 @@ class GameSuggestionTests(TestCase):
         response = self.client.get('/api/admin/game-suggestions/')
         self.assertEqual(response.status_code, 403)
 
+    def test_admin_list_pending_and_reviewed_suggestions(self):
+        GameSuggestion.objects.create(suggested_by=self.user, game_name='Pending Game')
+        GameSuggestion.objects.create(
+            suggested_by=self.user,
+            game_name='Reviewed Game',
+            is_reviewed=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+
+        pending_response = self.client.get('/api/admin/game-suggestions/')
+        self.assertEqual(pending_response.status_code, 200)
+        self.assertEqual(len(pending_response.data), 1)
+        self.assertEqual(pending_response.data[0]['game_name'], 'Pending Game')
+
+        reviewed_response = self.client.get('/api/admin/game-suggestions/', {'show_reviewed': 'true'})
+        self.assertEqual(reviewed_response.status_code, 200)
+        self.assertEqual(len(reviewed_response.data), 1)
+        self.assertEqual(reviewed_response.data[0]['game_name'], 'Reviewed Game')
+
 
 class SeedMarioKartDlcTests(TestCase):
     def test_seed_mario_kart_includes_dlc_on_same_game(self):
