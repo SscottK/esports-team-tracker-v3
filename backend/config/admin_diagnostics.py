@@ -66,7 +66,7 @@ def run_admin_diagnostics(user):
                 (item for item in settings.ALLOWED_HOSTS if item not in {'*', 'localhost', '127.0.0.1'}),
                 settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else 'localhost',
             )
-            client = Client(HTTP_HOST=host)
+            client = Client(HTTP_HOST=host, secure=True, HTTP_X_FORWARDED_PROTO='https')
             client.force_login(user)
             response = client.get(path)
             if response.status_code != 200:

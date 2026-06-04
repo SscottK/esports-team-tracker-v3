@@ -54,7 +54,7 @@ Repo: `SscottK/esports-team-tracker-v3`, branch `main` (auto-deploy on push).
 | `ALLOWED_HOSTS` | `esports-team-tracker-v3-api.onrender.com` |
 | `CORS_ALLOWED_ORIGINS` | `https://esports-team-tracker.vercel.app` |
 | `CSRF_TRUSTED_ORIGINS` | `https://esports-team-tracker.vercel.app` (API host is added automatically from `ALLOWED_HOSTS`) |
-| `SECURE_SSL_REDIRECT` | `True` |
+| `SECURE_SSL_REDIRECT` | `False` (Render terminates HTTPS at the edge) |
 
 4. Deploy — `build.sh` runs migrations and collectstatic; `start.sh` runs migrations again before gunicorn
 

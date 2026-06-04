@@ -12,7 +12,7 @@ services:
       - key: DEBUG
         value: "False"
       - key: SECURE_SSL_REDIRECT
-        value: "True"
+        value: "False"
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
