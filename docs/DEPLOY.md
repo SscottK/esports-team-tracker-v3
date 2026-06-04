@@ -137,4 +137,4 @@ VITE_API_URL=http://127.0.0.1:8000 npm run build && npm run preview
 | API calls go to localhost | Rebuild Vercel after setting `VITE_API_URL` |
 | Empty DATABASE_URL on Render | Delete blank var or paste full Postgres URL |
 | Slow first request | Render starter spin-down; frontend shows wake overlay and retries |
-| Django admin 500 after login | Usually Python 3.14 + Django 5.1 — pin `PYTHON_VERSION=3.12.8` and `runtime.txt`. Check `curl .../api/health/?runtime=1`. Also set `SECURE_SSL_REDIRECT=False`. |
+| Django admin 500 after login | Render may use Python 3.14 — use Django 5.2+ (included in repo). Optional: pin `PYTHON_VERSION=3.12.8`. Check `curl .../api/health/?runtime=1&admin=1`. Set `SECURE_SSL_REDIRECT=False`. |
