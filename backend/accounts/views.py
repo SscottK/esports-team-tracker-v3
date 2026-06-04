@@ -37,6 +37,19 @@ class HealthView(APIView):
             payload['unapplied_migrations'] = unapplied
             if unapplied:
                 payload['status'] = 'degraded'
+        if request.query_params.get('admin') == '1':
+            staff = User.objects.filter(is_staff=True).order_by('id').first()
+            if not staff:
+                payload['admin'] = {'error': 'No staff user found.'}
+                payload['status'] = 'degraded'
+            else:
+                diagnostics = run_admin_diagnostics(staff)
+                payload['admin'] = {
+                    'changelist_view_errors': diagnostics['changelist_views']['errors'],
+                    'changelist_query_errors': diagnostics['changelists']['errors'],
+                }
+                if diagnostics['changelist_views']['errors'] or diagnostics['changelists']['errors']:
+                    payload['status'] = 'degraded'
         return Response(payload)
 
 

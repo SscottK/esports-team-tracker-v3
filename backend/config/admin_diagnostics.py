@@ -17,6 +17,7 @@ def run_admin_diagnostics(user):
     results = {
         'unapplied_migrations': unapplied,
         'changelists': {'ok': [], 'errors': []},
+        'changelist_views': {'ok': [], 'errors': []},
     }
 
     if unapplied:
@@ -53,6 +54,23 @@ def run_admin_diagnostics(user):
             results['changelists']['ok'].append(path)
         except Exception as exc:
             results['changelists']['errors'].append({
+                'model': f'{model._meta.app_label}.{model._meta.model_name}',
+                'path': path,
+                'error': str(exc),
+            })
+
+        try:
+            response = model_admin.changelist_view(request)
+            if response.status_code != 200:
+                results['changelist_views']['errors'].append({
+                    'model': f'{model._meta.app_label}.{model._meta.model_name}',
+                    'path': path,
+                    'status_code': response.status_code,
+                })
+            else:
+                results['changelist_views']['ok'].append(path)
+        except Exception as exc:
+            results['changelist_views']['errors'].append({
                 'model': f'{model._meta.app_label}.{model._meta.model_name}',
                 'path': path,
                 'error': str(exc),
