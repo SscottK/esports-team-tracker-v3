@@ -136,3 +136,4 @@ VITE_API_URL=http://127.0.0.1:8000 npm run build && npm run preview
 | API calls go to localhost | Rebuild Vercel after setting `VITE_API_URL` |
 | Empty DATABASE_URL on Render | Delete blank var or paste full Postgres URL |
 | Slow first request | Render starter spin-down; frontend shows wake overlay and retries |
+| Django admin 500 after login | Redeploy API; `build.sh` runs `collectstatic`. Uses compressed WhiteNoise storage (not manifest) |
