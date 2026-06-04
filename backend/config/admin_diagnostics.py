@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
-from django.test import RequestFactory
+from django.test import Client, RequestFactory
 
 
 def _unapplied_migrations():
@@ -60,7 +60,15 @@ def run_admin_diagnostics(user):
             })
 
         try:
-            response = model_admin.changelist_view(request)
+            from django.conf import settings
+
+            host = next(
+                (item for item in settings.ALLOWED_HOSTS if item not in {'*', 'localhost', '127.0.0.1'}),
+                settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else 'localhost',
+            )
+            client = Client(HTTP_HOST=host)
+            client.force_login(user)
+            response = client.get(path)
             if response.status_code != 200:
                 results['changelist_views']['errors'].append({
                     'model': f'{model._meta.app_label}.{model._meta.model_name}',
