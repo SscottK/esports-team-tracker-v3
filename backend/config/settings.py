@@ -23,6 +23,13 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
+for host in ALLOWED_HOSTS:
+    if host in {'localhost', '127.0.0.1', 'testserver', '0.0.0.0', '*'}:
+        continue
+    origin = f'https://{host}'
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -88,11 +95,12 @@ def _database_url():
     )
 
 
+_db_url = _database_url()
 DATABASES = {
     'default': dj_database_url.parse(
-        _database_url(),
+        _db_url,
         conn_max_age=600,
-        ssl_require=not DEBUG,
+        ssl_require=not DEBUG and _db_url.startswith('postgres'),
     )
 }
 
@@ -144,3 +152,24 @@ CORS_ALLOWED_ORIGINS = [
     ).split(',')
     if origin.strip()
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}

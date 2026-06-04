@@ -42,7 +42,7 @@ Repo: `SscottK/esports-team-tracker-v3`, branch `main` (auto-deploy on push).
 | **Root Directory** | `backend` |
 | **Runtime** | Python 3 |
 | **Build Command** | `./build.sh` |
-| **Start Command** | `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
+| **Start Command** | `./start.sh` |
 
 3. **Environment** (production example):
 
@@ -53,10 +53,10 @@ Repo: `SscottK/esports-team-tracker-v3`, branch `main` (auto-deploy on push).
 | `DATABASE_URL` | Internal Postgres URL (must not be blank) |
 | `ALLOWED_HOSTS` | `esports-team-tracker-v3-api.onrender.com` |
 | `CORS_ALLOWED_ORIGINS` | `https://esports-team-tracker.vercel.app` |
-| `CSRF_TRUSTED_ORIGINS` | `https://esports-team-tracker.vercel.app` |
+| `CSRF_TRUSTED_ORIGINS` | `https://esports-team-tracker.vercel.app` (API host is added automatically from `ALLOWED_HOSTS`) |
 | `SECURE_SSL_REDIRECT` | `True` |
 
-4. Deploy — `build.sh` runs migrations and collectstatic
+4. Deploy — `build.sh` runs migrations and collectstatic; `start.sh` runs migrations again before gunicorn
 
 ### 3. First-time data (Render Shell)
 
@@ -136,4 +136,4 @@ VITE_API_URL=http://127.0.0.1:8000 npm run build && npm run preview
 | API calls go to localhost | Rebuild Vercel after setting `VITE_API_URL` |
 | Empty DATABASE_URL on Render | Delete blank var or paste full Postgres URL |
 | Slow first request | Render starter spin-down; frontend shows wake overlay and retries |
-| Django admin 500 after login | Redeploy API; `build.sh` runs `collectstatic`. Uses compressed WhiteNoise storage (not manifest) |
+| Django admin 500 after login | Check `curl .../api/health/?migrations=1` for pending migrations. Redeploy API (uses `start.sh`). Render logs now include request tracebacks. Staff JWT: `GET /api/health/admin/` for per-model changelist errors. |

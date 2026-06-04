@@ -12,6 +12,7 @@ from accounts.services.password_reset_requests import (
     review_password_reset_request,
 )
 from games.models import GameSuggestion
+from config.admin_diagnostics import _unapplied_migrations, run_admin_diagnostics
 from performances.permissions import IsPlatformAdmin
 from .serializers import (
     AdminBetaFeedbackSerializer,
@@ -30,7 +31,20 @@ class HealthView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        return Response({'status': 'ok'})
+        payload = {'status': 'ok'}
+        if request.query_params.get('migrations') == '1':
+            unapplied = _unapplied_migrations()
+            payload['unapplied_migrations'] = unapplied
+            if unapplied:
+                payload['status'] = 'degraded'
+        return Response(payload)
+
+
+class AdminHealthView(APIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def get(self, request):
+        return Response(run_admin_diagnostics(request.user))
 
 
 class RegisterView(generics.CreateAPIView):

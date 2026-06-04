@@ -6,6 +6,7 @@ from .views import (
     AdminBetaFeedbackView,
     AdminPasswordResetRequestDetailView,
     AdminPasswordResetRequestView,
+    AdminHealthView,
     AdminPendingCountsView,
     BetaFeedbackCreateView,
     HealthView,
@@ -17,6 +18,7 @@ from .views import (
 
 urlpatterns = [
     path('health/', HealthView.as_view(), name='health'),
+    path('health/admin/', AdminHealthView.as_view(), name='health-admin'),
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', TokenObtainPairView.as_view(), name='login'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
