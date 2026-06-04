@@ -2,17 +2,14 @@ import { useEffect, useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import AdminReviewTabs from '../components/AdminReviewTabs';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
 import { useAuth } from '../context/AuthContext';
 import { useNav } from '../context/NavContext';
+import { requestStatusBadgeVariant, requestStatusLabel } from '../utils/inboxLabels';
+import { djangoAdminUrl } from '../utils/djangoAdminLinks';
 import * as adminApi from '../api/admin';
-
-function djangoAdminUrl(path) {
-  const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-  return `${apiBase}${path}`;
-}
 
 export default function ManagePasswordResetRequests() {
   const { user } = useAuth();
@@ -22,7 +19,7 @@ export default function ManagePasswordResetRequests() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [showReviewed, setShowReviewed] = useState(false);
+  const [view, setView] = useState('pending');
   const [pendingCount, setPendingCount] = useState(0);
 
   const load = async () => {
@@ -30,7 +27,7 @@ export default function ManagePasswordResetRequests() {
     setError('');
     try {
       const [data, counts] = await Promise.all([
-        adminApi.getPasswordResetRequests(showReviewed),
+        adminApi.getPasswordResetRequests(view === 'reviewed'),
         adminApi.getAdminPendingCounts(),
       ]);
       setRequests(data);
@@ -46,7 +43,7 @@ export default function ManagePasswordResetRequests() {
     if (user?.is_staff) {
       load();
     }
-  }, [user, showReviewed]);
+  }, [user, view]);
 
   const handleReview = async (requestId, action) => {
     setBusy(true);
@@ -79,92 +76,90 @@ export default function ManagePasswordResetRequests() {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
-      <section className="esports-panel form-page-panel mb-4">
+      <section className="esports-panel form-page-panel">
         <p className="form-page-intro mb-3">
           Users submit reset requests from the sign-in page. Open the linked Django admin user record to set a new
           password, then mark the request complete here.
         </p>
-        <Form.Check
-          type="switch"
-          id="show-reviewed-password-resets"
-          label="Show reviewed requests"
-          checked={showReviewed}
-          onChange={(event) => setShowReviewed(event.target.checked)}
-        />
-        {!showReviewed && pendingCount > 0 && (
-          <p className="dashboard-panel-meta mt-3 mb-0">{pendingCount} pending request(s)</p>
-        )}
-      </section>
 
-      {loading ? (
-        <p className="dashboard-loading">Loading...</p>
-      ) : requests.length === 0 ? (
-        <Alert variant="info" className="dashboard-empty-alert mb-0">
-          {showReviewed ? 'No password reset requests yet.' : 'No pending password reset requests.'}
-        </Alert>
-      ) : (
-        <section className="esports-panel form-page-panel">
+        <AdminReviewTabs
+          view={view}
+          onViewChange={setView}
+          pendingCount={pendingCount}
+          ariaLabel="Password reset request lists"
+        />
+
+        {loading ? (
+          <p className="dashboard-loading mb-0">Loading requests…</p>
+        ) : requests.length === 0 ? (
+          <p className="dashboard-empty-copy mb-0">
+            {view === 'pending' ? 'No pending password reset requests.' : 'No reviewed password reset requests yet.'}
+          </p>
+        ) : (
           <div className="team-member-list">
-            {requests.map((item) => (
-              <div key={item.id} className="inbox-item-row">
-                <div>
-                  <div className="inbox-item-title">
-                    <span>{item.username}</span>
-                    <Badge bg={item.status === 'pending' ? 'warning' : 'secondary'} text={item.status === 'pending' ? 'dark' : undefined}>
-                      {item.status}
-                    </Badge>
-                  </div>
-                  <div className="inbox-item-meta">
-                    Account email: {item.account_email || 'none on file'}
-                  </div>
-                  {item.contact_email && (
-                    <div className="inbox-item-meta">Contact email: {item.contact_email}</div>
-                  )}
-                  {item.message && (
-                    <div className="inbox-item-meta">{item.message}</div>
-                  )}
-                  <div className="inbox-item-meta">
-                    Requested {new Date(item.created_at).toLocaleString()}
-                  </div>
-                  {item.django_admin_user_url && (
+            {requests.map((item) => {
+              const statusVariant = requestStatusBadgeVariant(item.status);
+              return (
+                <div key={item.id} className="inbox-item-row">
+                  <div>
+                    <div className="inbox-item-title">
+                      <span>{item.username}</span>
+                      <Badge bg={statusVariant.bg} text={statusVariant.text}>
+                        {requestStatusLabel(item.status)}
+                      </Badge>
+                    </div>
                     <div className="inbox-item-meta">
-                      <a
-                        href={djangoAdminUrl(item.django_admin_user_url)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      Account email: {item.account_email || 'none on file'}
+                    </div>
+                    {item.contact_email && (
+                      <div className="inbox-item-meta">Contact email: {item.contact_email}</div>
+                    )}
+                    {item.message && (
+                      <div className="inbox-item-meta">{item.message}</div>
+                    )}
+                    <div className="inbox-item-meta">
+                      Requested {new Date(item.created_at).toLocaleString()}
+                    </div>
+                    {item.django_admin_user_url && (
+                      <div className="inbox-item-meta">
+                        <a
+                          href={djangoAdminUrl(item.django_admin_user_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Open user in Django admin
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  {view === 'pending' && item.status === 'pending' && (
+                    <div className="inbox-item-actions">
+                      <Button
+                        size="sm"
+                        variant="outline-success"
+                        className="team-member-history-btn"
+                        disabled={busy}
+                        onClick={() => handleReview(item.id, 'complete')}
                       >
-                        Open user in Django admin
-                      </a>
+                        Mark complete
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        className="team-member-history-btn"
+                        disabled={busy}
+                        onClick={() => handleReview(item.id, 'reject')}
+                      >
+                        Reject
+                      </Button>
                     </div>
                   )}
                 </div>
-                {item.status === 'pending' && (
-                  <div className="inbox-item-actions">
-                    <Button
-                      size="sm"
-                      variant="outline-success"
-                      className="team-member-history-btn"
-                      disabled={busy}
-                      onClick={() => handleReview(item.id, 'complete')}
-                    >
-                      Mark complete
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      className="team-member-history-btn"
-                      disabled={busy}
-                      onClick={() => handleReview(item.id, 'reject')}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </section>
-      )}
+        )}
+      </section>
     </Page>
   );
 }

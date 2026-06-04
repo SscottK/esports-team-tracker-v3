@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import AdminReviewTabs from '../components/AdminReviewTabs';
 import BackButton from '../components/BackButton';
 import Page from '../components/Page';
 import { useAuth } from '../context/AuthContext';
@@ -19,14 +19,14 @@ export default function ManageGameSuggestions() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [showReviewed, setShowReviewed] = useState(false);
+  const [view, setView] = useState('pending');
 
   const load = async () => {
     setLoading(true);
     setError('');
     try {
       const [data, counts] = await Promise.all([
-        gamesApi.getAdminGameSuggestions(!showReviewed),
+        gamesApi.getAdminGameSuggestions(view !== 'pending'),
         adminApi.getAdminPendingCounts(),
       ]);
       setSuggestions(data);
@@ -42,7 +42,7 @@ export default function ManageGameSuggestions() {
     if (user?.is_staff) {
       load();
     }
-  }, [user, showReviewed]);
+  }, [user, view]);
 
   const handlePromote = async (suggestionId, gameName) => {
     setBusy(true);
@@ -105,38 +105,33 @@ export default function ManageGameSuggestions() {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
-      <section className="esports-panel form-page-panel mb-4">
+      <section className="esports-panel form-page-panel">
         <p className="form-page-intro mb-3">
           Review games suggested by users. Promoting creates a catalog entry coaches can assign to teams.
           You still add tracks/levels in Django admin afterward.
         </p>
-        <Form.Check
-          type="switch"
-          id="show-reviewed-suggestions"
-          label="Show reviewed suggestions"
-          checked={showReviewed}
-          onChange={(event) => setShowReviewed(event.target.checked)}
-        />
-        {!showReviewed && pendingCount > 0 && (
-          <p className="dashboard-panel-meta mt-3 mb-0">{pendingCount} pending suggestion(s)</p>
-        )}
-      </section>
 
-      {loading ? (
-        <p className="dashboard-loading">Loading...</p>
-      ) : suggestions.length === 0 ? (
-        <Alert variant="info" className="dashboard-empty-alert mb-0">
-          {showReviewed ? 'No game suggestions yet.' : 'No pending game suggestions.'}
-        </Alert>
-      ) : (
-        <section className="esports-panel form-page-panel">
+        <AdminReviewTabs
+          view={view}
+          onViewChange={setView}
+          pendingCount={pendingCount}
+          ariaLabel="Game suggestion lists"
+        />
+
+        {loading ? (
+          <p className="dashboard-loading mb-0">Loading suggestions…</p>
+        ) : suggestions.length === 0 ? (
+          <p className="dashboard-empty-copy mb-0">
+            {view === 'pending' ? 'No pending game suggestions.' : 'No reviewed game suggestions yet.'}
+          </p>
+        ) : (
           <div className="team-member-list">
             {suggestions.map((suggestion) => (
               <div key={suggestion.id} className="inbox-item-row">
                 <div>
                   <div className="inbox-item-title">
                     <span>{suggestion.game_name}</span>
-                    {suggestion.is_reviewed && <Badge bg="secondary">Reviewed</Badge>}
+                    {view === 'reviewed' && <Badge bg="secondary">Reviewed</Badge>}
                   </div>
                   <div className="inbox-item-meta">
                     Suggested by {suggestion.suggested_by_username}
@@ -144,7 +139,7 @@ export default function ManageGameSuggestions() {
                     {new Date(suggestion.created_at).toLocaleString()}
                   </div>
                 </div>
-                {!suggestion.is_reviewed && (
+                {view === 'pending' && !suggestion.is_reviewed && (
                   <div className="inbox-item-actions">
                     <Button
                       size="sm"
@@ -178,8 +173,8 @@ export default function ManageGameSuggestions() {
               </div>
             ))}
           </div>
-        </section>
-      )}
+        )}
+      </section>
     </Page>
   );
 }

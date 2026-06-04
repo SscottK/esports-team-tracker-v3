@@ -84,11 +84,38 @@ html[data-color-mode='light'] body {
 .app-beta-footer-link {
   color: var(--esports-secondary);
   text-decoration: none;
+  font: inherit;
+}
+
+button.app-beta-footer-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
 }
 
 .app-beta-footer-link:hover {
   color: var(--esports-accent);
   text-decoration: underline;
+}
+
+.feedback-modal-page-label {
+  color: var(--esports-text);
+  font-weight: 700;
+}
+
+.admin-panel-link-desc {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--esports-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.admin-panel-link-arrow {
+  flex-shrink: 0;
+  color: var(--esports-muted);
+  font-size: 0.9rem;
 }
 
 .beta-feedback-list {
@@ -150,6 +177,23 @@ html[data-color-mode='light'] body {
 
 .page-header-actions--compact {
   flex-wrap: nowrap;
+}
+
+@media (max-width: 767px) {
+  .page-header-actions--compact {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 100%;
+  }
+
+  .times-grid-section-head-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .times-grid-section-toggles {
+    width: 100%;
+  }
 }
 
 .page-links-menu {

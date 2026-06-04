@@ -11,28 +11,15 @@ import * as orgApi from '../api/orgs';
 import * as teamApi from '../api/teams';
 import * as requestsApi from '../api/requests';
 
-function requestTypeLabel(type) {
-  if (type === 'org_join') return 'Organization join';
-  if (type === 'team_join') return 'Team join';
-  if (type === 'team_invite') return 'Team invite';
-  if (type === 'team_migration') return 'Team move';
-  if (type === 'password_reset') return 'Password reset';
-  if (type === 'outgoing_team_migration') return 'Team move (outgoing)';
-  if (type === 'incoming_team_migration') return 'Team move (incoming)';
-  return type;
-}
+import { requestStatusBadgeVariant, requestStatusLabel, requestTypeLabel } from '../utils/inboxLabels';
 
 function statusBadge(status) {
-  if (status === 'pending') return <Badge bg="warning" text="dark">Pending</Badge>;
-  if (status === 'pending_source' || status === 'pending_target') {
-    return <Badge bg="warning" text="dark">Pending</Badge>;
-  }
-  if (status === 'approved' || status === 'completed') {
-    return <Badge bg="success">{status === 'completed' ? 'Completed' : 'Approved'}</Badge>;
-  }
-  if (status === 'rejected') return <Badge bg="danger">Rejected</Badge>;
-  if (status === 'cancelled') return <Badge bg="secondary">Cancelled</Badge>;
-  return <Badge bg="secondary">{status}</Badge>;
+  const variant = requestStatusBadgeVariant(status);
+  return (
+    <Badge bg={variant.bg} text={variant.text}>
+      {requestStatusLabel(status)}
+    </Badge>
+  );
 }
 
 function formatDate(isoString) {
@@ -224,10 +211,6 @@ export default function RequestsInbox() {
     }
   };
 
-  if (loading) {
-    return <Page title="Requests"><p className="dashboard-loading">Loading...</p></Page>;
-  }
-
   const pendingSentCount = sent.filter((item) => item.action === 'cancel').length;
   const activeItems = view === 'pending' ? pending : view === 'reviewed' ? reviewed : sent;
   const introCopy = {
@@ -237,6 +220,12 @@ export default function RequestsInbox() {
   };
 
   const adminQueues = [
+    {
+      label: 'Django admin panel',
+      to: '/admin',
+      count: 0,
+      alwaysShow: true,
+    },
     {
       label: 'Beta feedback',
       to: '/admin/beta-feedback',
@@ -279,6 +268,8 @@ export default function RequestsInbox() {
                 <Badge bg="danger" className="admin-queue-link-badge">
                   {queue.count} pending
                 </Badge>
+              ) : queue.alwaysShow ? (
+                <span className="admin-queue-link-status">Open</span>
               ) : (
                 <span className="admin-queue-link-status">Up to date</span>
               )}
@@ -334,21 +325,25 @@ export default function RequestsInbox() {
 
         <p className="form-page-intro inbox-section-intro">{introCopy[view]}</p>
 
-        <InboxList
-          items={activeItems}
-          emptyMessage={
-            view === 'pending'
-              ? 'No pending requests.'
-              : view === 'sent'
-                ? 'No sent requests yet.'
-                : 'No reviewed requests yet.'
-          }
-          onReview={handleReview}
-          onRespond={handleRespond}
-          onCancel={handleCancel}
-          busy={busy}
-          showActions={view === 'pending' || view === 'sent'}
-        />
+        {loading ? (
+          <p className="dashboard-loading mb-0">Loading requests…</p>
+        ) : (
+          <InboxList
+            items={activeItems}
+            emptyMessage={
+              view === 'pending'
+                ? 'No pending requests.'
+                : view === 'sent'
+                  ? 'No sent requests yet.'
+                  : 'No reviewed requests yet.'
+            }
+            onReview={handleReview}
+            onRespond={handleRespond}
+            onCancel={handleCancel}
+            busy={busy}
+            showActions={view === 'pending' || view === 'sent'}
+          />
+        )}
       </section>
     </div>
   );

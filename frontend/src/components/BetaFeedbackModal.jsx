@@ -3,8 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import BackButton from '../components/BackButton';
-import Page from '../components/Page';
+import Modal from 'react-bootstrap/Modal';
 import { APP_BETA_LABEL } from '../config/appMeta';
 import {
   getFeedbackPageLabel,
@@ -12,7 +11,7 @@ import {
 } from '../utils/feedbackPageOptions';
 import * as feedbackApi from '../api/feedback';
 
-export default function BetaFeedback() {
+export default function BetaFeedbackModal({ show, onHide }) {
   const location = useLocation();
   const [message, setMessage] = useState('');
   const [pagePath, setPagePath] = useState('');
@@ -21,12 +20,14 @@ export default function BetaFeedback() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (location.pathname === '/feedback') {
-      setPagePath('/feedback');
+    if (!show) {
       return;
     }
     setPagePath(resolveFeedbackPagePath(location.pathname));
-  }, [location.pathname]);
+    setMessage('');
+    setSubmitted(false);
+    setError('');
+  }, [show, location.pathname]);
 
   const pageLabel = pagePath
     ? getFeedbackPageLabel(pagePath)
@@ -51,10 +52,17 @@ export default function BetaFeedback() {
     }
   };
 
+  const handleClose = () => {
+    onHide();
+  };
+
   return (
-    <Page title="Beta feedback" actions={<BackButton fallback="/dashboard" />}>
-      <section className="esports-panel form-page-panel">
-        <p className="form-page-intro">
+    <Modal show={show} onHide={handleClose} centered className="esports-modal">
+      <Modal.Header closeButton>
+        <Modal.Title>Send beta feedback</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="form-page-intro mb-3">
           You are using {APP_BETA_LABEL}. Tell us what is working, what is confusing, or what you would like next.
         </p>
 
@@ -70,7 +78,7 @@ export default function BetaFeedback() {
                 <Form.Label>Page</Form.Label>
                 <div className="feedback-modal-page-label">{pageLabel}</div>
                 <Form.Text className="text-muted">
-                  Use the footer link on any page to capture the page automatically.
+                  Captured automatically from where you opened this form.
                 </Form.Text>
               </Form.Group>
               <Form.Group className="mb-3">
@@ -82,15 +90,28 @@ export default function BetaFeedback() {
                   onChange={(event) => setMessage(event.target.value)}
                   placeholder="Describe the issue, idea, or praise..."
                   required
+                  autoFocus
                 />
               </Form.Group>
-              <Button type="submit" disabled={submitting || !message.trim()}>
-                {submitting ? 'Sending…' : 'Send feedback'}
-              </Button>
+              <div className="d-flex flex-wrap gap-2">
+                <Button type="submit" disabled={submitting || !message.trim()}>
+                  {submitting ? 'Sending…' : 'Send feedback'}
+                </Button>
+                <Button type="button" variant="outline-secondary" onClick={handleClose}>
+                  Cancel
+                </Button>
+              </div>
             </Form>
           </>
         )}
-      </section>
-    </Page>
+      </Modal.Body>
+      {submitted && (
+        <Modal.Footer>
+          <Button variant="outline-primary" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      )}
+    </Modal>
   );
 }

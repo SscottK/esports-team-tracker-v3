@@ -13,6 +13,7 @@ Deploy details: [DEPLOY.md](./DEPLOY.md) · Future work: [ROADMAP.md](./ROADMAP.
 - Platform admins manage the catalog via Django admin (`/admin/`) or in-app **Game suggestions**, **Password reset requests**, and **Beta feedback** (staff menu).
 - Times are per team; the same user on two teams has separate histories.
 - Every team member is a **real user account** — roster is not display-only names.
+- One org per user; leave before joining another org
 - Render **starter** tier may sleep the API; first load can take up to ~1 minute (startup overlay + retry).
 
 ## Requests inbox coverage
@@ -71,15 +72,16 @@ Team invite accept rules: user not in any org → join org + team; same org → 
 - [ ] Org leader leave with successor
 - [ ] Team migration: head coach requests move → both org leaders approve
 
-### Multi-team / multi-org
-- [ ] User in two orgs: both appear in nav
+### Multi-team
 - [ ] Same game on two teams: dashboard team switcher + grid team switcher
 
 ### Mobile (phone width)
 - [ ] Hamburger nav usable
-- [ ] Times grid horizontal scroll / mobile cards
-- [ ] Coach tools / grid: More pages menu + key buttons on one row
+- [ ] Times grid: searchable track picker + toggles under title
+- [ ] Coach tools / grid: More pages menu + key buttons wrap on narrow screens
 - [ ] Requests inbox: Pending / Sent / Reviewed tabs
+- [ ] Admin Requests section with pending badges (staff)
+- [ ] Beta feedback popup from footer captures current page
 
 ## Beta feedback to collect
 
@@ -91,6 +93,6 @@ Team invite accept rules: user not in any org → join org + team; same org → 
 
 ## Reporting issues
 
-Signed-in testers can use **Send beta feedback** in the page footer (`Beta v0.1.0`) or go to `/feedback`. Staff review submissions at `/admin/beta-feedback`.
+Signed-in testers can use **Send beta feedback** in the page footer (`Beta v0.1.0`) — a popup opens and the current page is captured automatically. Staff review submissions at `/admin/beta-feedback`.
 
 Also note when reporting elsewhere: username, page URL, what you clicked, expected vs actual, and screenshot if possible.

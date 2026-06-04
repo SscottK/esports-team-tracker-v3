@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { AuthProvider } from './context/AuthContext';
+import { FeedbackModalProvider } from './context/FeedbackModalContext';
 import { NavProvider } from './context/NavContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServerWakeProvider } from './context/ServerWakeContext';
@@ -27,6 +27,7 @@ import TimeHistory from './pages/TimeHistory';
 import UploadTimes from './pages/UploadTimes';
 import ManageGameSuggestions from './pages/ManageGameSuggestions';
 import ManagePasswordResetRequests from './pages/ManagePasswordResetRequests';
+import ManageAdminPanel from './pages/ManageAdminPanel';
 import ManageBetaFeedback from './pages/ManageBetaFeedback';
 import BetaFeedback from './pages/BetaFeedback';
 import ForgotPassword from './pages/ForgotPassword';
@@ -38,6 +39,7 @@ function App() {
   return (
     <ServerWakeProvider>
       <AuthProvider>
+        <FeedbackModalProvider>
         <NavProvider>
           <BrowserRouter>
             <ThemeProvider>
@@ -68,6 +70,7 @@ function App() {
                       <Route path="/teams/:teamId/upload-times" element={<UploadTimes />} />
                       <Route path="/teams/:teamId/time-history" element={<TimeHistory />} />
                       <Route path="/teams/:teamId/benchmarks" element={<SetBenchmarks />} />
+                      <Route path="/admin" element={<ManageAdminPanel />} />
                       <Route path="/admin/game-suggestions" element={<ManageGameSuggestions />} />
                       <Route path="/admin/password-reset-requests" element={<ManagePasswordResetRequests />} />
                       <Route path="/admin/beta-feedback" element={<ManageBetaFeedback />} />
@@ -80,6 +83,7 @@ function App() {
             </ThemeProvider>
           </BrowserRouter>
         </NavProvider>
+        </FeedbackModalProvider>
       </AuthProvider>
     </ServerWakeProvider>
   );

@@ -18,6 +18,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
   { label: 'Set benchmarks', path: '/teams/{team}/benchmarks' },
   { label: 'Game suggestions (admin)', path: '/admin/game-suggestions' },
   { label: 'Password reset requests (admin)', path: '/admin/password-reset-requests' },
+  { label: 'Django admin panel', path: '/admin' },
   { label: 'Beta feedback inbox (admin)', path: '/admin/beta-feedback' },
   { label: 'Home', path: '/' },
   { label: 'Sign in', path: '/signin' },

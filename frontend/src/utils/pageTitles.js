@@ -31,6 +31,9 @@ export function getPageTitleForPath(pathname) {
   if (pathname === '/add-time') {
     return 'Add time';
   }
+  if (pathname === '/admin') {
+    return 'Admin panel';
+  }
   if (pathname === '/admin/game-suggestions') {
     return 'Game suggestions';
   }

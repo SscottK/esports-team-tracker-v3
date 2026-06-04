@@ -159,6 +159,9 @@ export default function AppNavBar() {
                   </Nav.Link>
                   {user.is_staff && (
                     <>
+                      <Nav.Link as={NavLink} to="/admin" onClick={closeMenu}>
+                        Django admin panel
+                      </Nav.Link>
                       <Nav.Link as={NavLink} to="/admin/game-suggestions" onClick={closeMenu}>
                         Game suggestions
                       </Nav.Link>
