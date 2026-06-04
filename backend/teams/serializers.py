@@ -187,6 +187,13 @@ class CreateTeamInviteSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
 
 
+class BulkCreateTeamInviteSerializer(serializers.Serializer):
+    usernames = serializers.ListField(
+        child=serializers.CharField(max_length=150),
+        allow_empty=False,
+    )
+
+
 class TeamInviteSerializer(serializers.ModelSerializer):
     invited_username = serializers.CharField(source='invited_user.username', read_only=True)
     invited_user_id = serializers.IntegerField(source='invited_user.id', read_only=True)

@@ -84,7 +84,9 @@ class AdminPasswordResetRequestView(APIView):
     def get(self, request):
         show_reviewed = request.query_params.get('show_reviewed', '').lower() in ('1', 'true', 'yes')
         queryset = PasswordResetRequest.objects.select_related('user', 'reviewed_by')
-        if not show_reviewed:
+        if show_reviewed:
+            queryset = queryset.exclude(status=PasswordResetRequestStatus.PENDING)
+        else:
             queryset = queryset.filter(status=PasswordResetRequestStatus.PENDING)
         return Response(AdminPasswordResetRequestSerializer(queryset, many=True).data)
 
@@ -127,7 +129,9 @@ class AdminBetaFeedbackView(APIView):
     def get(self, request):
         show_reviewed = request.query_params.get('show_reviewed', '').lower() in ('1', 'true', 'yes')
         queryset = BetaFeedback.objects.select_related('user', 'reviewed_by')
-        if not show_reviewed:
+        if show_reviewed:
+            queryset = queryset.filter(reviewed_at__isnull=False)
+        else:
             queryset = queryset.filter(reviewed_at__isnull=True)
         return Response(AdminBetaFeedbackSerializer(queryset, many=True).data)
 

@@ -87,6 +87,11 @@ export const sendTeamInvite = async (teamId, username) => {
   return response.data;
 };
 
+export const sendBulkTeamInvites = async (teamId, usernames) => {
+  const response = await apiClient.post(`/teams/${teamId}/invites/bulk/`, { usernames });
+  return response.data;
+};
+
 export const respondTeamInvite = async (teamId, inviteId, action) => {
   const response = await apiClient.patch(`/teams/${teamId}/invites/${inviteId}/`, { action });
   return response.data;

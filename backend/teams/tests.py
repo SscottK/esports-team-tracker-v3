@@ -481,3 +481,16 @@ class TeamInviteTests(TestCase):
         self.assertEqual(response.status_code, 200)
         invite.refresh_from_db()
         self.assertEqual(invite.status, 'cancelled')
+
+    def test_head_coach_can_bulk_invite(self):
+        User.objects.create_user(username='player2', password='pass12345')
+        self.client.force_authenticate(user=self.head)
+        response = self.client.post(
+            f'/api/teams/{self.team.id}/invites/bulk/',
+            {'usernames': ['invitee', 'player2', 'ghostuser', 'invitee']},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(set(response.data['sent']), {'invitee', 'player2'})
+        self.assertEqual(response.data['skipped']['not_found'], ['ghostuser'])
+        self.assertEqual(response.data['skipped']['duplicate'], ['invitee'])

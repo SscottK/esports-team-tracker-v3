@@ -2136,6 +2136,29 @@ html[data-color-mode='light'] .server-wake-overlay {
   text-transform: uppercase;
 }
 
+.coach-tools-subsection-title {
+  margin: 0 0 0.5rem;
+  color: var(--esports-text);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.coach-tools-bulk-invite {
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.coach-tools-bulk-textarea {
+  min-height: 6.5rem;
+  resize: vertical;
+}
+
+.coach-tools-bulk-report-line {
+  margin: 0;
+  color: var(--esports-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
 .coach-tools-actions {
   display: flex;
   flex-wrap: wrap;

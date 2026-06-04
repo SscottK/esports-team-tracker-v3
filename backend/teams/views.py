@@ -25,6 +25,7 @@ from teams.models import (
 )
 from teams.serializers import (
     AddTeamMemberSerializer,
+    BulkCreateTeamInviteSerializer,
     CreateTeamInviteSerializer,
     CreateTeamSerializer,
     LeaveTeamSerializer,
@@ -43,6 +44,7 @@ from teams.serializers import (
 )
 from teams.services.invites import (
     TeamInviteError,
+    bulk_create_team_invites,
     cancel_team_invite,
     create_team_invite,
     respond_team_invite,
@@ -321,6 +323,23 @@ class TeamInviteView(APIView):
             TeamInviteSerializer(invite).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+class TeamBulkInviteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, team_id):
+        serializer = BulkCreateTeamInviteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = bulk_create_team_invites(
+                request.user,
+                team_id,
+                serializer.validated_data['usernames'],
+            )
+        except TeamInviteError as exc:
+            return Response({'detail': exc.message}, status=exc.status_code)
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class TeamInviteDetailView(APIView):

@@ -38,6 +38,7 @@ from teams.views import (
     OrgTeamMigrationRequestView,
     OrgTeamsView,
     TeamGameView,
+    TeamBulkInviteView,
     TeamInviteDetailView,
     TeamInviteView,
     TeamJoinRequestDetailView,
@@ -114,6 +115,7 @@ urlpatterns = [
         TeamJoinRequestDetailView.as_view(),
         name='team-join-request-detail',
     ),
+    path('teams/<int:team_id>/invites/bulk/', TeamBulkInviteView.as_view(), name='team-invites-bulk'),
     path('teams/<int:team_id>/invites/', TeamInviteView.as_view(), name='team-invites'),
     path(
         'teams/<int:team_id>/invites/<int:invite_id>/',

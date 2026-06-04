@@ -123,3 +123,50 @@ def respond_team_invite(user, invite_id, team_id, *, action):
         invite.save(update_fields=['status', 'reviewed_by', 'updated_at'])
 
     return invite, membership
+
+
+def bulk_create_team_invites(inviter, team_id, usernames):
+    if not user_is_head_coach(inviter, team_id):
+        raise TeamInviteError('Only head coaches can send team invites.', status_code=403)
+
+    sent = []
+    skipped = {
+        'not_found': [],
+        'already_on_team': [],
+        'pending_invite': [],
+        'pending_join_request': [],
+        'self': [],
+        'duplicate': [],
+        'errors': [],
+    }
+    seen = set()
+
+    for raw in usernames:
+        username = raw.strip()
+        if not username:
+            continue
+        key = username.lower()
+        if key in seen:
+            skipped['duplicate'].append(username)
+            continue
+        seen.add(key)
+
+        try:
+            invite = create_team_invite(inviter, team_id, username)
+            sent.append(invite.invited_user.username)
+        except TeamInviteError as exc:
+            message = exc.message.lower()
+            if 'not found' in message:
+                skipped['not_found'].append(username)
+            elif 'already on this team' in message:
+                skipped['already_on_team'].append(username)
+            elif 'pending invite' in message:
+                skipped['pending_invite'].append(username)
+            elif 'pending join request' in message:
+                skipped['pending_join_request'].append(username)
+            elif 'invite yourself' in message:
+                skipped['self'].append(username)
+            else:
+                skipped['errors'].append({'username': username, 'detail': exc.message})
+
+    return {'sent': sent, 'skipped': skipped}
