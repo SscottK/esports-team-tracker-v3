@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { AuthProvider } from './context/AuthContext';
 import { FeedbackModalProvider } from './context/FeedbackModalContext';
 import { NavProvider } from './context/NavContext';
 import { ThemeProvider } from './context/ThemeContext';
