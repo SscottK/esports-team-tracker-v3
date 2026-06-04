@@ -13,6 +13,8 @@ import { useNav } from '../context/NavContext';
 import * as gamesApi from '../api/games';
 import * as teamApi from '../api/teams';
 import * as usersApi from '../api/users';
+import { gridPathForTeam, resolveGridGameId } from '../utils/lastGridGame';
+import { parseUsernameList } from '../utils/parseUsernameList';
 
 export default function TeamCoachTools() {
   const { teamId } = useParams();
@@ -30,6 +32,8 @@ export default function TeamCoachTools() {
   const [inviteUsername, setInviteUsername] = useState('');
   const [inviteLookup, setInviteLookup] = useState(null);
   const [pendingInvites, setPendingInvites] = useState([]);
+  const [bulkInviteText, setBulkInviteText] = useState('');
+  const [bulkReport, setBulkReport] = useState(null);
   const [newCoachRole, setNewCoachRole] = useState('none');
   const [newCompeting, setNewCompeting] = useState(true);
   const [error, setError] = useState('');
@@ -46,7 +50,6 @@ export default function TeamCoachTools() {
     [memberships, myMembership],
   );
   const isOnlyMember = myMembership && otherMembers.length === 0;
-  const defaultUploadGameId = teamGames[0]?.game?.id;
 
   const load = async () => {
     setLoading(true);
@@ -173,6 +176,34 @@ export default function TeamCoachTools() {
     }
   };
 
+  const handleBulkInvite = async (event) => {
+    event.preventDefault();
+    const usernames = parseUsernameList(bulkInviteText);
+    if (!usernames.length) {
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setSuccess('');
+    setBulkReport(null);
+    try {
+      const result = await teamApi.sendBulkTeamInvites(teamId, usernames);
+      setBulkReport(result);
+      const sentCount = result.sent?.length || 0;
+      if (sentCount > 0) {
+        setSuccess(`Sent ${sentCount} invite${sentCount === 1 ? '' : 's'}.`);
+        setBulkInviteText('');
+      } else {
+        setSuccess('No invites sent. Review the report below.');
+      }
+      await load();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Unable to send bulk invites.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleRequestTeamMigration = async (event) => {
     event.preventDefault();
     setBusy(true);
@@ -256,12 +287,14 @@ export default function TeamCoachTools() {
     return null;
   }
 
-  const uploadTimesPath = defaultUploadGameId
-    ? `/teams/${teamId}/upload-times?game=${defaultUploadGameId}`
+  const resolvedGameId = resolveGridGameId(
+    teamId,
+    teamGames.map(({ game }) => game.id),
+  );
+  const uploadTimesPath = resolvedGameId
+    ? `/teams/${teamId}/upload-times?game=${resolvedGameId}`
     : `/teams/${teamId}/upload-times`;
-  const timesGridPath = defaultUploadGameId
-    ? `/teams/${teamId}/games/${defaultUploadGameId}`
-    : null;
+  const timesGridPath = gridPathForTeam(teamId, teamGames);
 
   const coachPageLinks = [
     { label: 'Set benchmarks', to: `/teams/${teamId}/benchmarks` },
@@ -359,6 +392,63 @@ export default function TeamCoachTools() {
               ))}
             </ul>
           )}
+
+          <div className="coach-tools-bulk-invite mt-4 pt-3">
+            <h4 className="coach-tools-subsection-title">Bulk invite</h4>
+            <p className="dashboard-panel-meta mb-3">
+              Paste or type usernames separated by commas or new lines. Each user must already have an account.
+            </p>
+            <Form onSubmit={handleBulkInvite} className="coach-tools-form">
+              <Form.Group>
+                <Form.Label>Usernames</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  placeholder={'riley\ncoach2\nplayer3'}
+                  value={bulkInviteText}
+                  onChange={(e) => setBulkInviteText(e.target.value)}
+                  className="coach-tools-bulk-textarea"
+                />
+              </Form.Group>
+              <Button type="submit" variant="outline-primary" className="mobile-full-width-btn" disabled={busy}>
+                Send bulk invites
+              </Button>
+            </Form>
+            {bulkReport && (
+              <div className="coach-tools-bulk-report mt-3">
+                {bulkReport.sent?.length > 0 && (
+                  <p className="coach-tools-bulk-report-line mb-1">
+                    Sent: {bulkReport.sent.join(', ')}
+                  </p>
+                )}
+                {bulkReport.skipped?.not_found?.length > 0 && (
+                  <p className="coach-tools-bulk-report-line mb-1">
+                    Unknown usernames: {bulkReport.skipped.not_found.join(', ')}
+                  </p>
+                )}
+                {bulkReport.skipped?.already_on_team?.length > 0 && (
+                  <p className="coach-tools-bulk-report-line mb-1">
+                    Already on team: {bulkReport.skipped.already_on_team.join(', ')}
+                  </p>
+                )}
+                {bulkReport.skipped?.pending_invite?.length > 0 && (
+                  <p className="coach-tools-bulk-report-line mb-1">
+                    Pending invite: {bulkReport.skipped.pending_invite.join(', ')}
+                  </p>
+                )}
+                {bulkReport.skipped?.pending_join_request?.length > 0 && (
+                  <p className="coach-tools-bulk-report-line mb-1">
+                    Pending join request: {bulkReport.skipped.pending_join_request.join(', ')}
+                  </p>
+                )}
+                {bulkReport.skipped?.duplicate?.length > 0 && (
+                  <p className="coach-tools-bulk-report-line mb-1">
+                    Duplicate rows skipped: {bulkReport.skipped.duplicate.join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </section>
       )}
 

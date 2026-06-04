@@ -11,6 +11,7 @@ import { useNav } from '../context/NavContext';
 import { activityLabel } from '../utils/gameLabels';
 import * as performancesApi from '../api/performances';
 import * as teamApi from '../api/teams';
+import { rememberLastGridGame } from '../utils/lastGridGame';
 
 export default function TimesGrid() {
   const { teamId, gameId } = useParams();
@@ -73,6 +74,12 @@ export default function TimesGrid() {
     };
     load();
   }, [teamId, gameId, includeCoachCompetitors, includeDlc]);
+
+  useEffect(() => {
+    if (teamId && gameId) {
+      rememberLastGridGame(teamId, gameId);
+    }
+  }, [teamId, gameId]);
 
   const trackLabel = activityLabel(grid?.game, true);
   const showTeamSwitcher = teamsWithGame.length > 1;
