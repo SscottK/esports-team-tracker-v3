@@ -11,6 +11,7 @@ function formatShortDate(isoString) {
   return new Date(isoString).toLocaleString(undefined, {
     month: 'numeric',
     day: 'numeric',
+    year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
   });
