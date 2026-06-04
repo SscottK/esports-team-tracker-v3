@@ -109,6 +109,12 @@ export default function ManageBetaFeedback() {
                     <span className="inbox-item-meta">{formatWhen(item.created_at)}</span>
                   </div>
                   <div className="inbox-item-meta">{item.message}</div>
+                  {view === 'reviewed' && item.reviewed_at && (
+                    <div className="inbox-item-meta">
+                      Reviewed {formatWhen(item.reviewed_at)}
+                      {item.reviewed_by_username ? ` · ${item.reviewed_by_username}` : ''}
+                    </div>
+                  )}
                 </div>
                 {view === 'pending' && !item.is_reviewed && (
                   <div className="inbox-item-actions">

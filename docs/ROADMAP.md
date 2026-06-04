@@ -16,11 +16,11 @@ Planned improvements to investigate and discuss before implementation. Nothing h
 
 ### Still open from high-priority pass
 
-- **Mobile layout audit** — `TeamDetail`, `TeamCoachTools`, `CompareTimes`, `AddTime` (**done**); verify on real devices
-- **Bulk roster import** — discussed; not built
+- **Mobile layout audit** — shipped; verify on real devices during beta
+- **Bulk roster import** — **Done** (bulk team invites by username in Coach tools)
 - **Self-serve password reset (email)** — manual staff flow only
-- **Remember last times grid game** — multi-game teams open first assigned game
-- **Render cold-start** — overlay only; paid tier / keep-warm not done
+- **Remember last times grid game** — **Done**
+- **Render cold-start** — paid API + Postgres; overlay kept as deploy fallback
 - **Incremental in-app tips** — deferred until beta feedback
 
 ---
@@ -154,7 +154,7 @@ Add items here as coaches report them:
 - [x] Coach tools: forms and actions full width; invite/migration rows stack
 - [x] Compare: mobile cards; toggles in section head; grid link in header
 - [x] Add time: large inputs and full-width submit
-- [ ] Verify leaderboard accordion on real device (times grid)
+- [x] Verify leaderboard accordion on real device (times grid)
 - [ ] Real-device pass after beta feedback
 
 ### Team detail & coach flows (audit reference)
