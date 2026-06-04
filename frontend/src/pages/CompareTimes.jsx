@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
+import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-import Page from '../components/Page';
 import BackButton from '../components/BackButton';
+import MobileCompareCards from '../components/MobileCompareCards';
+import Page from '../components/Page';
 import { activityLabel } from '../utils/gameLabels';
 import * as performancesApi from '../api/performances';
 import * as teamApi from '../api/teams';
@@ -93,97 +95,128 @@ export default function CompareTimes() {
   }, [member1, member2, member3]);
 
   const trackLabel = activityLabel(data?.game, true);
+  const showGridToggles = viewer?.can_toggle_dlc || viewer?.can_toggle_coach_competitors;
   const getTime = (levelId, memberId) => data?.times?.[`${levelId}-${memberId}`] || '—';
-
   const memberLabel = (memberId) => humanMembers.find((member) => String(member.id) === memberId)?.username || 'Member';
 
   return (
     <Page
       title={data ? `Compare — ${teamName}` : 'Compare times'}
       actions={(
-        <BackButton fallback={`/teams/${teamId}/games/${gameId}`} label="Back" />
+        <div className="page-header-actions page-header-actions--compact">
+          <Button
+            as={Link}
+            to={`/teams/${teamId}/games/${gameId}`}
+            variant="outline-primary"
+            size="sm"
+          >
+            Times grid
+          </Button>
+          <BackButton fallback={`/teams/${teamId}/games/${gameId}`} label="Back" />
+        </div>
       )}
     >
       {error && <Alert variant="danger">{error}</Alert>}
+
       {loading ? (
-        <p>Loading...</p>
-      ) : (
+        <p className="dashboard-loading">Loading comparison…</p>
+      ) : data ? (
         <>
-          {viewer?.can_toggle_dlc && (
-            <Form.Check
-              type="switch"
-              id="compare-include-dlc-tracks"
-              className="mb-3"
-              label="Show DLC tracks (Booster Course Pass)"
-              checked={includeDlc}
-              onChange={(e) => setIncludeDlc(e.target.checked)}
-            />
-          )}
-
-          {viewer?.can_toggle_coach_competitors && (
-            <Form.Check
-              type="switch"
-              id="compare-include-coach-competitors"
-              className="mb-3"
-              label="Show coach times (coaches who also compete)"
-              checked={includeCoachCompetitors}
-              onChange={(e) => setIncludeCoachCompetitors(e.target.checked)}
-            />
-          )}
-
           <section className="esports-panel form-page-panel compare-filters-panel mb-4">
-            <h3 className="coach-tools-section-title">{data.game.name}</h3>
-            <p className="form-page-intro">
-              Compare up to three team members side by side. Colors are relative to the fastest selected time on each row.
-            </p>
-            <Row className="g-3">
-                <Col xs={12} md={4}>
-                  <Form.Group>
-                    <Form.Label>First team member</Form.Label>
-                    <Form.Select value={member1} onChange={(e) => setMember1(e.target.value)}>
-                      <option value="">Select team member</option>
-                      {humanMembers.map((member) => (
-                        <option key={member.id} value={member.id}>{member.username}</option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col xs={12} md={4}>
-                  <Form.Group>
-                    <Form.Label>Second team member</Form.Label>
-                    <Form.Select value={member2} onChange={(e) => setMember2(e.target.value)}>
-                      <option value="">Select team member</option>
-                      {humanMembers.map((member) => (
-                        <option key={member.id} value={member.id}>{member.username}</option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col xs={12} md={4}>
-                  <Form.Group>
-                    <Form.Label>Third team member (optional)</Form.Label>
-                    <Form.Select value={member3} onChange={(e) => setMember3(e.target.value)}>
-                      <option value="">None</option>
-                      {humanMembers.map((member) => (
-                        <option key={member.id} value={member.id}>{member.username}</option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
+            <div className="compare-section-head">
+              <div className="compare-section-head-row">
+                <h3 className="coach-tools-section-title mb-0">{data.game.name}</h3>
+                {showGridToggles && (
+                  <div className="compare-section-toggles">
+                    {viewer?.can_toggle_dlc && (
+                      <Form.Check
+                        type="switch"
+                        id="compare-include-dlc-tracks"
+                        className="times-grid-toggle mb-0"
+                        label="Show DLC tracks (Booster Course Pass)"
+                        checked={includeDlc}
+                        onChange={(e) => setIncludeDlc(e.target.checked)}
+                      />
+                    )}
+                    {viewer?.can_toggle_coach_competitors && (
+                      <Form.Check
+                        type="switch"
+                        id="compare-include-coach-competitors"
+                        className="times-grid-toggle mb-0"
+                        label="Show coach times (coaches who also compete)"
+                        checked={includeCoachCompetitors}
+                        onChange={(e) => setIncludeCoachCompetitors(e.target.checked)}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="form-page-intro mb-0">
+                Compare up to three team members side by side. Colors are relative to the fastest selected time on each row.
+              </p>
+            </div>
+
+            <Row className="g-3 compare-member-filters">
+              <Col xs={12} md={4}>
+                <Form.Group>
+                  <Form.Label>First team member</Form.Label>
+                  <Form.Select value={member1} onChange={(e) => setMember1(e.target.value)}>
+                    <option value="">Select team member</option>
+                    {humanMembers.map((member) => (
+                      <option key={member.id} value={member.id}>{member.username}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={4}>
+                <Form.Group>
+                  <Form.Label>Second team member</Form.Label>
+                  <Form.Select value={member2} onChange={(e) => setMember2(e.target.value)}>
+                    <option value="">Select team member</option>
+                    {humanMembers.map((member) => (
+                      <option key={member.id} value={member.id}>{member.username}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={4}>
+                <Form.Group>
+                  <Form.Label>Third team member (optional)</Form.Label>
+                  <Form.Select value={member3} onChange={(e) => setMember3(e.target.value)}>
+                    <option value="">None</option>
+                    {humanMembers.map((member) => (
+                      <option key={member.id} value={member.id}>{member.username}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
           </section>
 
           {selectedMembers.length < 2 ? (
             <Alert variant="info">Select at least two different team members to compare.</Alert>
           ) : (
             <>
-              <div className="compare-legend mb-3 small">
+              <div className="compare-legend mb-3">
                 <span className="compare-pill compare-better">Better time</span>
                 <span className="compare-pill compare-close">Within 5%</span>
                 <span className="compare-pill compare-medium">5–10% slower</span>
                 <span className="compare-pill compare-slow">&gt;10% slower</span>
               </div>
-              <div className="grid-scroll-wrapper">
+
+              <div className="d-md-none">
+                <MobileCompareCards
+                  levels={data.levels}
+                  selectedMembers={selectedMembers}
+                  memberLabel={memberLabel}
+                  getTime={getTime}
+                  timeToMs={timeToMs}
+                  diffPercent={diffPercent}
+                  spreadFromBest={spreadFromBest}
+                />
+              </div>
+
+              <div className="d-none d-md-block grid-scroll-wrapper">
                 <table className="table table-sm table-bordered compare-table mb-0">
                   <thead>
                     <tr>
@@ -243,7 +276,7 @@ export default function CompareTimes() {
             </>
           )}
         </>
-      )}
+      ) : null}
     </Page>
   );
 }

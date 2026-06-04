@@ -122,7 +122,7 @@ export default function TeamDetail() {
   };
 
   if (loading) {
-    return <Page title="Team"><p>Loading...</p></Page>;
+    return <Page title="Team"><p className="dashboard-loading">Loading team…</p></Page>;
   }
 
   if (!teamId || teamId === 'undefined') {
@@ -147,7 +147,12 @@ export default function TeamDetail() {
     <Page
       title={team?.name || 'Team'}
       actions={(
-        <div className="page-header-actions">
+        <div className="page-header-actions page-header-actions--compact">
+          {isCoach && (
+            <Button as={Link} to={`/teams/${teamId}/coach`} variant="outline-primary" size="sm">
+              Coach tools
+            </Button>
+          )}
           <BackButton fallback="/dashboard" />
         </div>
       )}
@@ -167,11 +172,6 @@ export default function TeamDetail() {
               You are a <strong>{roleLabel(myMembership)}</strong>
             </span>
           </div>
-          {isCoach && (
-            <Button as={Link} to={`/teams/${teamId}/coach`} variant="outline-primary" size="sm">
-              Coach tools
-            </Button>
-          )}
           {isCoach && !myMembership.is_competing_member && (
             <span className="team-detail-meta-hint">
               Mark yourself as competing in Coach tools to appear on the times grid
@@ -223,7 +223,10 @@ export default function TeamDetail() {
                 );
 
                 return (
-                  <div key={membership.id} className="team-member-row">
+                  <div
+                    key={membership.id}
+                    className={`team-member-row${showCompeteToggle ? ' team-member-row--manage' : ''}`}
+                  >
                     <div className="team-member-identity">
                       <span className="team-member-name">{membership.username}</span>
                       {visibleBadges.length > 0 && (

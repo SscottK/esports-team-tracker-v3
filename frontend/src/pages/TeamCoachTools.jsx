@@ -249,7 +249,7 @@ export default function TeamCoachTools() {
   };
 
   if (loading) {
-    return <Page title="Coach tools"><p>Loading...</p></Page>;
+    return <Page title="Coach tools"><p className="dashboard-loading">Loading coach tools…</p></Page>;
   }
 
   if (!myMembership?.is_coach) {
@@ -327,7 +327,7 @@ export default function TeamCoachTools() {
                 required
               />
             </Form.Group>
-            <Button type="submit" variant="outline-primary" disabled={busy}>
+            <Button type="submit" variant="outline-primary" className="mobile-full-width-btn" disabled={busy}>
               Look up user
             </Button>
           </Form>
@@ -336,7 +336,7 @@ export default function TeamCoachTools() {
               <p className="mb-2">
                 Send invite to <strong>{inviteLookup.username}</strong>?
               </p>
-              <Button variant="outline-success" disabled={busy} onClick={handleSendInvite}>
+              <Button variant="outline-success" className="mobile-full-width-btn" disabled={busy} onClick={handleSendInvite}>
                 Send invite
               </Button>
             </div>
@@ -397,7 +397,7 @@ export default function TeamCoachTools() {
               checked={newCompeting}
               onChange={(e) => setNewCompeting(e.target.checked)}
             />
-            <Button type="submit" variant="outline-primary" disabled={busy}>
+            <Button type="submit" variant="outline-primary" className="mobile-full-width-btn" disabled={busy}>
               Save roster entry
             </Button>
           </Form>
@@ -431,7 +431,7 @@ export default function TeamCoachTools() {
                 ))}
               </Form.Select>
             </Form.Group>
-            <Button type="submit" variant="outline-primary" disabled={busy}>
+            <Button type="submit" variant="outline-primary" className="mobile-full-width-btn" disabled={busy}>
               Assign game
             </Button>
           </Form>
@@ -447,7 +447,7 @@ export default function TeamCoachTools() {
           {migrationRequests.length > 0 ? (
             <div className="team-member-list">
               {migrationRequests.map((migrationRequest) => (
-                <div key={migrationRequest.id} className="team-member-row">
+                <div key={migrationRequest.id} className="team-member-row team-member-row--action">
                   <div>
                     <strong>{migrationRequest.target_organization_name}</strong>
                     <div className="dashboard-panel-meta">
@@ -457,6 +457,7 @@ export default function TeamCoachTools() {
                   <Button
                     size="sm"
                     variant="outline-primary"
+                    className="team-member-history-btn team-action-btn"
                     disabled={busy}
                     onClick={() => handleCancelTeamMigration(migrationRequest.id)}
                   >
@@ -473,7 +474,7 @@ export default function TeamCoachTools() {
                 onChange={(e) => setMigrationJoinCode(e.target.value.toUpperCase())}
                 required
               />
-              <Button type="submit" variant="outline-primary" disabled={busy}>
+              <Button type="submit" variant="outline-primary" className="mobile-full-width-btn" disabled={busy}>
                 Request move
               </Button>
             </Form>
@@ -488,7 +489,7 @@ export default function TeamCoachTools() {
             ? 'Assign a new head coach or disband the team before leaving.'
             : 'You will lose access to this team’s roster, games, and times.'}
         </p>
-        <Button variant="outline-danger" onClick={openLeaveModal} disabled={busy}>
+        <Button variant="outline-danger" className="mobile-full-width-btn" onClick={openLeaveModal} disabled={busy}>
           {isHeadCoach && isOnlyMember ? 'Disband team' : 'Leave team'}
         </Button>
       </section>

@@ -16,7 +16,7 @@ Planned improvements to investigate and discuss before implementation. Nothing h
 
 ### Still open from high-priority pass
 
-- **Mobile layout audit** — `TeamDetail`, `TeamCoachTools`, `CompareTimes`, `AddTime` (see checklist below)
+- **Mobile layout audit** — `TeamDetail`, `TeamCoachTools`, `CompareTimes`, `AddTime` (**done**); verify on real devices
 - **Bulk roster import** — discussed; not built
 - **Self-serve password reset (email)** — manual staff flow only
 - **Remember last times grid game** — multi-game teams open first assigned game
@@ -114,32 +114,57 @@ Add items here as coaches report them:
 
 ---
 
-## Mobile layout parity (remaining audit)
+## Mobile layout parity (team & coach flows)
 
-Desktop polish from recent betas is not fully reflected on all phone-width layouts.
-
-### Times grid — shipped in this pass
+### Times grid — shipped
 
 - Searchable track dropdown on mobile
 - Header actions wrap on narrow screens
-- DLC + coach toggles stay grouped under the “Track times” title
+- DLC + coach toggles grouped under the “Track times” title
 
-### Team detail & coach flows (still to audit)
+### Team detail — shipped
 
-| Page | Check |
-|------|--------|
-| `TeamDetail.jsx` | Coach tools button, roster role/compete controls, games list |
-| `TeamCoachTools.jsx` | More pages menu, Times grid shortcut, action button row |
-| `CompareTimes.jsx` | Header actions, DLC/coach toggles |
-| `AddTimeMenu.jsx` / `AddTime.jsx` | Header layout |
+- Coach tools in page header (compact actions row)
+- Roster manage rows: full-width role select, compete toggle, and history on mobile
+- Game links use full panel width on phone
 
-### Acceptance checklist (mobile ≤ 640px)
+### Coach tools — shipped
+
+- Header actions wrap with larger tap targets
+- Form submit / invite / leave buttons full width on mobile
+- Pending invite and migration rows stack cleanly
+
+### Compare times — shipped
+
+- DLC/coach toggles grouped with game title (matches times grid)
+- Times grid shortcut in header
+- **Mobile card view** per track (no horizontal table scroll on phone)
+- Desktop keeps scrollable comparison table with sticky track column
+
+### Add time — shipped
+
+- Loading state while team data loads
+- 48px form controls and full-width save button on mobile
+
+### Acceptance checklist (mobile ≤ 767px)
 
 - [x] Times grid: toggles grouped under/with “Track times” title
 - [x] Times grid: More pages + Coach tools reachable without horizontal overflow
-- [ ] Times grid: leaderboard accordion verified on real device
-- [ ] Team detail + coach tools: same shortcuts/buttons as desktop where applicable
-- [ ] No raw layout regressions (buttons off-screen, nowrap overflow)
+- [x] Team detail: Coach tools in header; roster controls usable one-handed
+- [x] Coach tools: forms and actions full width; invite/migration rows stack
+- [x] Compare: mobile cards; toggles in section head; grid link in header
+- [x] Add time: large inputs and full-width submit
+- [ ] Verify leaderboard accordion on real device (times grid)
+- [ ] Real-device pass after beta feedback
+
+### Team detail & coach flows (audit reference)
+
+| Page | Status |
+|------|--------|
+| `TeamDetail.jsx` | Shipped — see above |
+| `TeamCoachTools.jsx` | Shipped — see above |
+| `CompareTimes.jsx` | Shipped — see above |
+| `AddTime.jsx` / `AddTimeMenu.jsx` | Shipped — see above |
 
 ---
 

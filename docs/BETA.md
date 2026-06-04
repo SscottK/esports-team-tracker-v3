@@ -78,6 +78,10 @@ Team invite accept rules: user not in any org → join org + team; same org → 
 ### Mobile (phone width)
 - [ ] Hamburger nav usable
 - [ ] Times grid: searchable track picker + toggles under title
+- [ ] Team page: Coach tools in header; roster controls stack on mobile
+- [ ] Coach tools: full-width actions; invite/migration rows stack
+- [ ] Compare: mobile track cards (not wide table scroll)
+- [ ] Add time: large inputs and full-width save button
 - [ ] Coach tools / grid: More pages menu + key buttons wrap on narrow screens
 - [ ] Requests inbox: Pending / Sent / Reviewed tabs
 - [ ] Admin Requests section with pending badges (staff)

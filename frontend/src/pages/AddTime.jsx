@@ -30,6 +30,7 @@ export default function AddTime() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const isCoach = myMembership?.is_coach;
   const canSubmitOwnTime = myMembership?.is_competing_member;
@@ -48,6 +49,7 @@ export default function AddTime() {
     : `/teams/${teamId}`;
 
   useEffect(() => {
+    setLoading(true);
     Promise.all([
       teamApi.getTeamGames(teamId),
       teamApi.getTeamMembers(teamId),
@@ -65,6 +67,8 @@ export default function AddTime() {
       }
     }).catch(() => {
       setError('Unable to load team data.');
+    }).finally(() => {
+      setLoading(false);
     });
   }, [teamId]);
 
@@ -135,6 +139,14 @@ export default function AddTime() {
     }
   };
 
+  if (loading) {
+    return (
+      <Page title="Add time" actions={<BackButton fallback={backFallback} />}>
+        <p className="dashboard-loading">Loading add time…</p>
+      </Page>
+    );
+  }
+
   if (!myMembership) {
     return (
       <Page title="Add time" actions={<BackButton fallback={`/teams/${teamId}`} />}>
@@ -171,7 +183,7 @@ export default function AddTime() {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
-      <section className="esports-panel form-page-panel">
+      <section className="esports-panel form-page-panel add-time-form">
         <p className="form-page-intro mb-3">
           Enter a time in M:SS.mmm format. Type digits only and we will insert the colon and period
           (example: 143411 becomes 1:43.411). Coaches can submit for any competing member.
@@ -234,7 +246,7 @@ export default function AddTime() {
             </Form.Text>
           </Form.Group>
 
-          <Button type="submit" variant="outline-primary" disabled={busy}>
+          <Button type="submit" variant="outline-primary" className="mobile-full-width-btn" disabled={busy}>
             {busy ? 'Saving...' : 'Save time'}
           </Button>
         </Form>
