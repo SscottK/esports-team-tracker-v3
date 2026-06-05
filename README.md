@@ -77,7 +77,8 @@ App runs at `http://localhost:5173`. Set `VITE_API_URL=http://localhost:8000` in
    - **Invite** users by username (they accept in Requests; cross-org accept requires leaving the other org first)
 5. Coach sets **benchmarks** (Par 1, Par 2, elite)
 6. Competing members **add times** or coach **uploads CSV** (times only — roster must exist first)
-7. View the **times grid**, leaderboard, compare, and time history
+7. View the **times grid**, leaderboard, compare, and time history  
+   Coaches with multiple org teams on the same game can toggle **Show all teams in organization** on the grid to compare every player across teams (e.g. Varsity vs JV).
 
 All roster members are **real user accounts** — there are no display-only name slots.
 
@@ -102,6 +103,7 @@ Nav bell count = incoming **Pending** only.
 | Team invites, team colors | Head coach |
 | Submit times | Competing team members |
 | View grids / history | Team members |
+| Org-wide grid (all org teams, same game) | Coaches on any org team with that game |
 
 ## API highlights
 
@@ -117,7 +119,7 @@ Nav bell count = incoming **Pending** only.
 | POST | `/api/teams/{id}/invites/` | Head coach invite by username |
 | PATCH | `/api/teams/{id}/invites/{id}/` | Accept / decline / cancel invite |
 | POST | `/api/teams/{id}/join-requests/` | Request to join team |
-| GET | `/api/teams/{id}/games/{game_id}/grid/` | Times grid |
+| GET | `/api/teams/{id}/games/{game_id}/grid/` | Times grid (`?org_view=true` for coach org rollup) |
 | POST | `/api/teams/{id}/times-csv/` | Coach bulk-upload times (MK-style CSV) |
 | PATCH | `/api/teams/{id}/` | Head coach team colors |
 | POST | `/api/game-suggestions/` | Suggest a catalog game |
@@ -132,7 +134,7 @@ Full route list lives in `backend/config/api_urls.py` and `backend/accounts/urls
 - Orgs, teams, multi-org membership, leave / handoff / disband
 - Team join requests and head-coach **team + org invites**
 - Team migration between orgs (dual org-leader approval)
-- Times grid, benchmarks, compare, time history, CSV time upload
+- Times grid, org-wide coach grid toggle, benchmarks, compare, time history, CSV time upload
 - Requests inbox (Pending / **Sent** / Reviewed)
 - Coach tools, team colors, dark/light mode, team-themed UI
 - Game suggestions (user → staff admin)

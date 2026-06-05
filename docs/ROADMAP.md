@@ -13,15 +13,17 @@ Planned improvements to investigate and discuss before implementation. Nothing h
 | In-app admin panel → Django admin links | **Done** |
 | Mobile times grid: header actions wrap, toggles under title | **Done** (partial — team/coach pages still need audit) |
 | Update `docs/BETA.md` for one-org beta | **Done** |
+| Org-wide times grid toggle (coach-only) | **Done** |
+| Remember last times grid game | **Done** |
+| Bulk team invites (paste usernames) | **Done** |
 
 ### Still open from high-priority pass
 
 - **Mobile layout audit** — shipped; verify on real devices during beta
-- **Bulk roster import** — **Done** (bulk team invites by username in Coach tools)
 - **Self-serve password reset (email)** — manual staff flow only
-- **Remember last times grid game** — **Done**
 - **Render cold-start** — paid API + Postgres; overlay kept as deploy fallback
 - **Incremental in-app tips** — deferred until beta feedback
+- **Run beta with real orgs** — smoke-test checklist in `BETA.md` mostly unchecked
 
 ---
 
@@ -66,7 +68,6 @@ Track candidate pages in beta feedback before building.
 
 ## Coach workflow
 
-- **Remember last times grid game** — Coach tools “Times grid” and multi-game teams should open the last game viewed, not always the first assigned game.
 - **Assistant coaches send invites** — currently head coach only; revisit if needed.
 - **Export times** — CSV or summary from grid / time history for sharing outside the app.
 - **Season / event tags** — optional grouping for scrims, leagues, or meets.
@@ -75,6 +76,9 @@ Track candidate pages in beta feedback before building.
 
 ## Times grid & analytics
 
+- **Org-wide grid (coach-only)** — **Done** — toggle on times grid merges all org teams running the same game; team labels on columns; Par colors per player’s team; controls row places org toggle beside team switcher on desktop.
+- **Game switcher on grid** — not built; switch assigned game without leaving grid page.
+- **Org-wide leaderboard** — not built; leaderboard hidden when org view is on (v1).
 - **Personal bests / deltas** — show improvement vs last submission or vs Par on the grid.
 - **Richer compare** — trends or team-average views beyond the current 3-member compare.
 - **Per-team grid preferences** — remember DLC / coach-times toggles per team and game.
@@ -88,7 +92,7 @@ Track candidate pages in beta feedback before building.
 
 ---
 
-## Tomorrow: Street Fighter 6 & multi-game catalog
+## Next up: Street Fighter 6 & multi-game catalog
 
 **Context:** Adding a game name (Django admin or promote from suggestion) is not enough. Promote currently hardcodes `category=general`, `metric_type=time`. The app UI only supports **time** submissions today (`Add time`, grid, benchmarks, CSV).
 
@@ -116,13 +120,7 @@ Track candidate pages in beta feedback before building.
 - [ ] **Compare / leaderboard / CSV upload:** Skip or adapt per metric type (can defer compare/CSV for v1)
 - [ ] **Copy pass:** “Add time” → “Add result” when game is not time-based; grid title “Match results” etc.
 
-### D. Times grid — org-wide view (coach-only) — **Done**
-
-- [x] Toggle on times grid: all competing members from all org teams with this game
-- [x] Coach-only (`org_view` query param); Par colors use each player’s team benchmarks
-- [x] Team label on each column; leaderboard hidden in org view (v1)
-
-### E. Times grid — switch game without leaving the page
+### D. Times grid — switch game without leaving the page
 
 Today the grid is locked to one game via the URL (`/teams/:teamId/games/:gameId`). There is a **team** switcher when the same game is on multiple teams, but no **game** switcher when one team has multiple assigned games (e.g. MK8 + Street Fighter 6).
 
@@ -133,14 +131,14 @@ Today the grid is locked to one game via the URL (`/teams/:teamId/games/:gameId`
 - [ ] Mobile: full-width select, label from game name
 - [ ] Verify: switch MK8 ↔ SF6 (once SF6 exists); last-selected game still remembered from Coach tools entry
 
-### F. Verify
+### E. Verify (catalog + non-time games)
 
 - [ ] Django admin: edit SF6 category, metric, labels and save
 - [ ] Coach submits a **win count** for Week 1; appears on grid and time history
 - [ ] MK8 regression: time entry, grid, compare still work
 - [ ] Multi-game team: change game from grid dropdown without back navigation
 
-**Suggested order:** A → B → E (game switcher) → C → F
+**Suggested order:** A → B → D (game switcher) → C → E
 
 ---
 
@@ -149,6 +147,20 @@ Today the grid is locked to one game via the URL (`/teams/:teamId/games/:gameId`
 Add items here as coaches report them:
 
 - _(empty — fill in after beta sessions)_
+
+---
+
+## Recently shipped (org-wide times grid)
+
+**Coach-only org rollup** on the times grid (`?org_view=true`):
+
+- Toggle: **Show all teams in [organization]** (requires 2+ org teams with the same game assigned)
+- All competing players across those teams in one grid; **team name** on each column
+- Par cell colors use **that player’s team** benchmarks (Par columns hidden in org view)
+- Team switcher and org toggle share one **controls row** (side by side on desktop, stacked on phone)
+- Leaderboard accordion hidden in org view (v1)
+
+**Files:** `backend/performances/services/grid.py` (`build_org_grid`), `frontend/src/pages/TimesGrid.jsx`, `TimesGridTable.jsx`
 
 ---
 

@@ -12,6 +12,7 @@ Deploy details: [DEPLOY.md](./DEPLOY.md) · Future work: [ROADMAP.md](./ROADMAP.
 - Mario Kart 8 Deluxe is the primary seeded game (base + DLC tracks).
 - Platform admins manage the catalog via Django admin (`/admin/`) or in-app **Game suggestions**, **Password reset requests**, and **Beta feedback** (staff menu).
 - Times are per team; the same user on two teams has separate histories.
+- **Org-wide grid (coaches):** on the times grid, toggle **Show all teams in organization** to compare every competing player across org teams running the same game (e.g. Varsity + JV Mario Kart). Requires 2+ teams in the org with that game assigned.
 - Every team member is a **real user account** — roster is not display-only names.
 - One org per user; leave before joining another org
 - **Production hosting:** API on Render **Starter** (always on) and Postgres on **Basic-256mb** (no 30-day expiry). First load after a deploy may still take a moment while services restart.
@@ -64,6 +65,7 @@ Team invite accept rules: user not in any org → join org + team; same org → 
 - [ ] Add time (member + coach for another member)
 - [ ] Upload CSV (coach) — times only; usernames must already be on roster
 - [ ] Times grid: color coding, toggles on Tracks times row, leaderboard accordion, compare
+- [ ] Times grid (coach): **Show all teams in organization** merges Varsity/JV/etc. rosters for same game
 - [ ] Coach tools / grid: **Times grid** shortcut back to grid
 - [ ] Time history filters (coach + member)
 
@@ -74,6 +76,7 @@ Team invite accept rules: user not in any org → join org + team; same org → 
 
 ### Multi-team
 - [ ] Same game on two teams: dashboard team switcher + grid team switcher
+- [ ] Coach org-wide view: all org teams with same game in one grid; team labels on columns
 
 ### Mobile (phone width)
 - [ ] Hamburger nav usable
