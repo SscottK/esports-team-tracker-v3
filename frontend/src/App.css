@@ -1596,6 +1596,25 @@ html[data-color-mode='light'] .server-wake-overlay {
   color: var(--esports-text);
 }
 
+.grid-controls-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .grid-controls-row {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .grid-controls-row > .grid-org-view-switcher,
+  .grid-controls-row > .grid-team-switcher {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .grid-team-switcher {
   display: grid;
   grid-template-columns: 1fr;
@@ -1605,7 +1624,7 @@ html[data-color-mode='light'] .server-wake-overlay {
 
 @media (min-width: 768px) {
   .grid-team-switcher {
-    grid-template-columns: minmax(220px, 280px) 1fr;
+    grid-template-columns: minmax(180px, 240px) 1fr;
     align-items: end;
   }
 }
@@ -1624,9 +1643,12 @@ html[data-color-mode='light'] .server-wake-overlay {
 }
 
 .grid-org-view-switcher {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: 0.5rem;
   padding: 1rem 1.25rem;
+  height: 100%;
 }
 
 .grid-org-view-note {

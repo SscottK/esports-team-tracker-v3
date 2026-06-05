@@ -130,40 +130,44 @@ export default function TimesGrid() {
     >
       {error && <Alert variant="danger">{error}</Alert>}
 
-      {showOrgViewToggle && (
-        <div className="grid-org-view-switcher esports-panel mb-3">
-          <Form.Check
-            type="switch"
-            id="org-wide-grid"
-            className="times-grid-toggle mb-0"
-            label={`Show all teams in ${grid?.organization?.name || 'organization'}`}
-            checked={orgView}
-            onChange={(e) => setOrgView(e.target.checked)}
-          />
-          <p className="grid-org-view-note mb-0">
-            Coaches only. Compare every competing player across org teams running this game.
-            Par colors use each player&apos;s team benchmarks.
-          </p>
-        </div>
-      )}
+      {(showOrgViewToggle || showTeamSwitcher) && (
+        <div className="grid-controls-row mb-3">
+          {showOrgViewToggle && (
+            <div className="grid-org-view-switcher esports-panel">
+              <Form.Check
+                type="switch"
+                id="org-wide-grid"
+                className="times-grid-toggle mb-0"
+                label={`Show all teams in ${grid?.organization?.name || 'organization'}`}
+                checked={orgView}
+                onChange={(e) => setOrgView(e.target.checked)}
+              />
+              <p className="grid-org-view-note mb-0">
+                Coaches only. Compare every competing player across org teams running this game.
+                Par colors use each player&apos;s team benchmarks.
+              </p>
+            </div>
+          )}
 
-      {showTeamSwitcher && (
-        <div className="grid-team-switcher esports-panel mb-3">
-          <Form.Group className="mb-0">
-            <Form.Label className="grid-team-switcher-label">Team</Form.Label>
-            <Form.Select
-              value={teamId}
-              onChange={(e) => handleTeamChange(e.target.value)}
-              className="dashboard-select"
-            >
-              {teamsWithGame.map((team) => (
-                <option key={team.id} value={team.id}>{team.name}</option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          <p className="grid-team-switcher-note mb-0">
-            This game is assigned to multiple teams you are on. Switch teams to view a different roster grid.
-          </p>
+          {showTeamSwitcher && (
+            <div className="grid-team-switcher esports-panel">
+              <Form.Group className="mb-0">
+                <Form.Label className="grid-team-switcher-label">Team</Form.Label>
+                <Form.Select
+                  value={teamId}
+                  onChange={(e) => handleTeamChange(e.target.value)}
+                  className="dashboard-select"
+                >
+                  {teamsWithGame.map((team) => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <p className="grid-team-switcher-note mb-0">
+                This game is assigned to multiple teams you are on. Switch teams to view a different roster grid.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
