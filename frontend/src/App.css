@@ -1623,6 +1623,30 @@ html[data-color-mode='light'] .server-wake-overlay {
   font-size: 0.85rem;
 }
 
+.grid-org-view-switcher {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.grid-org-view-note {
+  color: var(--esports-muted);
+  font-size: 0.85rem;
+}
+
+.grid-member-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  line-height: 1.2;
+}
+
+.grid-member-team {
+  color: var(--esports-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
 /* Times grid page */
 .times-grid-toggle .form-check-label {
   color: var(--esports-text);

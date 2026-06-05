@@ -76,3 +76,23 @@ def user_can_submit_times(user, team_id):
 def get_team_org_id(team_id):
     from teams.models import Team
     return Team.objects.filter(pk=team_id).values_list('organization_id', flat=True).first()
+
+
+def org_teams_with_game_count(organization_id, game_id):
+    from teams.models import Team
+    return Team.objects.filter(
+        organization_id=organization_id,
+        team_games__game_id=game_id,
+    ).distinct().count()
+
+
+def user_can_view_org_grid(user, team_id, game_id):
+    org_id = get_team_org_id(team_id)
+    if not org_id:
+        return False
+    return TeamMembership.objects.filter(
+        user=user,
+        coach_role__in=(CoachRole.HEAD, CoachRole.ASSISTANT),
+        team__organization_id=org_id,
+        team__team_games__game_id=game_id,
+    ).exists()

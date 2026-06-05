@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from performances.models import MemberResult, TeamBenchmark
 from performances.services.time_utils import format_ms_to_time
-from teams.models import CoachRole, TeamGame, TeamMembership
+from teams.models import CoachRole, Team, TeamGame, TeamMembership
 
 
 def get_times_grid_memberships(team, include_coach_competitors=False):
@@ -88,6 +88,90 @@ def build_team_grid(team, game, include_coach_competitors=False, include_dlc=Fal
             {'id': member['user_id'], 'username': member['user__username']}
             for member in members
         ],
+        'levels': level_payload,
+        'include_coach_competitors': include_coach_competitors,
+        'include_dlc': include_dlc,
+    }
+
+
+def build_org_grid(organization, game, include_coach_competitors=False, include_dlc=False):
+    teams = list(
+        Team.objects.filter(organization=organization, team_games__game=game)
+        .distinct()
+        .order_by('name')
+    )
+    if not teams:
+        raise ValueError('No teams in this organization have this game assigned.')
+
+    levels = list(get_active_levels(game, include_dlc=include_dlc))
+    level_ids = [level.id for level in levels]
+    team_ids = [team.id for team in teams]
+
+    members = []
+    for team in teams:
+        for membership in get_times_grid_memberships(team, include_coach_competitors):
+            members.append(
+                {
+                    'id': membership.user_id,
+                    'username': membership.user.username,
+                    'team_id': team.id,
+                    'team_name': team.name,
+                    'member_key': f'{team.id}-{membership.user_id}',
+                }
+            )
+    members.sort(key=lambda row: (row['team_name'].lower(), row['username'].lower()))
+
+    member_user_ids = {member['id'] for member in members}
+    results = MemberResult.objects.filter(
+        team_id__in=team_ids,
+        level_id__in=level_ids,
+        user_id__in=member_user_ids,
+    )
+    result_map = {
+        (result.team_id, result.user_id, result.level_id): result
+        for result in results
+    }
+
+    benchmarks = TeamBenchmark.objects.filter(team_id__in=team_ids, level_id__in=level_ids)
+    benchmark_map = {(benchmark.team_id, benchmark.level_id): benchmark for benchmark in benchmarks}
+
+    level_payload = []
+    for level in levels:
+        row_results = {}
+        for member in members:
+            benchmark = benchmark_map.get((member['team_id'], level.id))
+            target_fast = benchmark.target_fast if benchmark else None
+            target_slow = benchmark.target_slow if benchmark else None
+            result = result_map.get((member['team_id'], member['id'], level.id))
+            value_ms = result.value if result else None
+            row_results[member['member_key']] = {
+                'value_ms': value_ms,
+                'display': format_ms_to_time(value_ms) if value_ms is not None else None,
+                'status': _classify_time(value_ms, target_fast, target_slow),
+            }
+        level_payload.append(
+            {
+                'id': level.id,
+                'name': level.name,
+                'level_group': level.level_group.name if level.level_group else None,
+                'is_dlc': level.is_dlc,
+                'benchmark': {
+                    'target_fast': None,
+                    'target_slow': None,
+                    'elite': None,
+                    'target_fast_ms': None,
+                    'target_slow_ms': None,
+                    'elite_ms': None,
+                },
+                'results': row_results,
+            }
+        )
+
+    return {
+        'game': _game_payload(game),
+        'organization': {'id': organization.id, 'name': organization.name},
+        'org_view': True,
+        'members': members,
         'levels': level_payload,
         'include_coach_competitors': include_coach_competitors,
         'include_dlc': include_dlc,

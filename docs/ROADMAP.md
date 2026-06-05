@@ -88,6 +88,62 @@ Track candidate pages in beta feedback before building.
 
 ---
 
+## Tomorrow: Street Fighter 6 & multi-game catalog
+
+**Context:** Adding a game name (Django admin or promote from suggestion) is not enough. Promote currently hardcodes `category=general`, `metric_type=time`. The app UI only supports **time** submissions today (`Add time`, grid, benchmarks, CSV).
+
+### A. Django admin — expose catalog fields (small backend change)
+
+- [ ] Add `GameAdmin` **fieldsets**: category, metric type, custom labels (`activity_label_singular`, `activity_label_plural`, `level_group_label`), slug, active flag
+- [ ] Put level/group **inlines** below metadata so category/metric aren’t buried
+- [ ] Optional: show labels in `list_display` or `list_filter` by category
+- [ ] Fix **promote** (`POST /api/admin/game-suggestions/:id/promote/`) — don’t hardcode General + Time; either prompt for category/metric or default Fighting + Count for fighting-game names
+
+### B. Street Fighter 6 catalog data (admin or seed command)
+
+- [ ] Set game: **category** `Fighting`, **metric** `Count`, labels **Match / Matches / Week**
+- [ ] Add **level group**: `Regular Season`
+- [ ] Add **levels**: `Week 1` … `Week 8` (or match your league length)
+- [ ] Optional: `seed_street_fighter_6` management command (mirror `seed_mario_kart`)
+- [ ] Assign SF6 to beta team(s) in Coach tools → Assign game
+
+### C. Non-time results — required before SF6 is usable in the app
+
+- [ ] **API:** Allow `count` / `score` / `percentage` in `MemberResultSerializer` (remove “time only” guard)
+- [ ] **Add result UI:** Game-aware input — time keypad for racing; plain number for count/score; label from game labels (not always “Time”)
+- [ ] **Grid & history:** Display raw value or formatted wins (not `format_ms_to_time`)
+- [ ] **Benchmarks:** Hide or redefine for non-time games (no Par/Elite times)
+- [ ] **Compare / leaderboard / CSV upload:** Skip or adapt per metric type (can defer compare/CSV for v1)
+- [ ] **Copy pass:** “Add time” → “Add result” when game is not time-based; grid title “Match results” etc.
+
+### D. Times grid — org-wide view (coach-only) — **Done**
+
+- [x] Toggle on times grid: all competing members from all org teams with this game
+- [x] Coach-only (`org_view` query param); Par colors use each player’s team benchmarks
+- [x] Team label on each column; leaderboard hidden in org view (v1)
+
+### E. Times grid — switch game without leaving the page
+
+Today the grid is locked to one game via the URL (`/teams/:teamId/games/:gameId`). There is a **team** switcher when the same game is on multiple teams, but no **game** switcher when one team has multiple assigned games (e.g. MK8 + Street Fighter 6).
+
+- [ ] Load team’s assigned games on `TimesGrid.jsx` (reuse `getTeamGames`)
+- [ ] Show a **Game** dropdown when the team has 2+ assigned games (same panel pattern as team switcher)
+- [ ] On change: `navigate(/teams/${teamId}/games/${nextGameId})` and call `rememberLastGridGame`
+- [ ] Keep compare / add time / history links in sync with selected game (already use `gameId` param)
+- [ ] Mobile: full-width select, label from game name
+- [ ] Verify: switch MK8 ↔ SF6 (once SF6 exists); last-selected game still remembered from Coach tools entry
+
+### F. Verify
+
+- [ ] Django admin: edit SF6 category, metric, labels and save
+- [ ] Coach submits a **win count** for Week 1; appears on grid and time history
+- [ ] MK8 regression: time entry, grid, compare still work
+- [ ] Multi-game team: change game from grid dropdown without back navigation
+
+**Suggested order:** A → B → E (game switcher) → C → F
+
+---
+
 ## Beta feedback backlog
 
 Add items here as coaches report them:

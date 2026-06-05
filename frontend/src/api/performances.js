@@ -1,8 +1,13 @@
 import apiClient from './client';
 
-const gridParams = ({ includeCoachCompetitors = false, includeDlc = false } = {}) => ({
+const gridParams = ({
+  includeCoachCompetitors = false,
+  includeDlc = false,
+  orgView = false,
+} = {}) => ({
   include_coach_competitors: includeCoachCompetitors,
   include_dlc: includeDlc,
+  ...(orgView ? { org_view: true } : {}),
 });
 
 export const getTeamGrid = async (teamId, gameId, options = {}) => {

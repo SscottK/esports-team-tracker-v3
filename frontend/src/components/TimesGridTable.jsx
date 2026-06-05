@@ -9,6 +9,10 @@ const statusClass = {
   slow: 'grid-cell-slow',
 };
 
+function memberResultKey(member) {
+  return member.member_key || String(member.id);
+}
+
 function TrackLabel({ level }) {
   return (
     <div className="track-label text-center">
@@ -27,6 +31,7 @@ function TrackLabel({ level }) {
 
 export default function TimesGridTable({ grid }) {
   const trackLabel = activityLabel(grid?.game, true);
+  const orgView = Boolean(grid?.org_view);
 
   if (!grid?.levels?.length) {
     return <p className="dashboard-empty-copy mb-0">No {trackLabel.toLowerCase()} yet for this game.</p>;
@@ -39,11 +44,22 @@ export default function TimesGridTable({ grid }) {
           <tr>
             <th className="sticky-col">{trackLabel}</th>
             {grid.members.map((member) => (
-              <th key={member.id} className="member-col">{member.username}</th>
+              <th key={memberResultKey(member)} className="member-col">
+                <div className="grid-member-head">
+                  <span>{member.username}</span>
+                  {orgView && member.team_name && (
+                    <span className="grid-member-team">{member.team_name}</span>
+                  )}
+                </div>
+              </th>
             ))}
-            <th>Par 1</th>
-            <th>Par 2</th>
-            <th>Elite</th>
+            {!orgView && (
+              <>
+                <th>Par 1</th>
+                <th>Par 2</th>
+                <th>Elite</th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -53,19 +69,23 @@ export default function TimesGridTable({ grid }) {
                 <TrackLabel level={level} />
               </td>
               {grid.members.map((member) => {
-                const cell = level.results[String(member.id)] || {};
+                const cell = level.results[memberResultKey(member)] || {};
                 return (
                   <td
-                    key={member.id}
+                    key={memberResultKey(member)}
                     className={`member-col text-center ${statusClass[cell.status] || ''}`}
                   >
                     {cell.display || '—'}
                   </td>
                 );
               })}
-              <td>{level.benchmark.target_fast || '—'}</td>
-              <td>{level.benchmark.target_slow || '—'}</td>
-              <td>{level.benchmark.elite || '—'}</td>
+              {!orgView && (
+                <>
+                  <td>{level.benchmark.target_fast || '—'}</td>
+                  <td>{level.benchmark.target_slow || '—'}</td>
+                  <td>{level.benchmark.elite || '—'}</td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
@@ -103,13 +123,18 @@ function MobileTrackTimesCard({ level, members }) {
         <span>Elite: {level.benchmark.elite || '—'}</span>
       </div>
       {members.map((member) => {
-        const cell = level.results[String(member.id)] || {};
+        const cell = level.results[memberResultKey(member)] || {};
         return (
           <div
-            key={member.id}
+            key={memberResultKey(member)}
             className={`mobile-grid-member-row ${statusClass[cell.status] || ''}`}
           >
-            <span>{member.username}</span>
+            <span>
+              {member.username}
+              {member.team_name && (
+                <span className="grid-member-team"> · {member.team_name}</span>
+              )}
+            </span>
             <span>{cell.display || '—'}</span>
           </div>
         );

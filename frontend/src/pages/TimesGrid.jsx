@@ -23,6 +23,7 @@ export default function TimesGrid() {
   const [teamsWithGame, setTeamsWithGame] = useState([]);
   const [includeCoachCompetitors, setIncludeCoachCompetitors] = useState(false);
   const [includeDlc, setIncludeDlc] = useState(true);
+  const [orgView, setOrgView] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [viewer, setViewer] = useState(null);
   const [error, setError] = useState('');
@@ -57,13 +58,21 @@ export default function TimesGrid() {
       setLoading(true);
       setError('');
       try {
-        const [gridData, leaderboardData, team] = await Promise.all([
-          performancesApi.getTeamGrid(teamId, gameId, { includeCoachCompetitors, includeDlc }),
-          performancesApi.getTeamLeaderboard(teamId, gameId, { includeCoachCompetitors, includeDlc }),
+        const [gridData, team] = await Promise.all([
+          performancesApi.getTeamGrid(teamId, gameId, { includeCoachCompetitors, includeDlc, orgView }),
           teamApi.getTeam(teamId),
         ]);
+        let leaderboardData = [];
+        if (!orgView) {
+          const leaderboardResponse = await performancesApi.getTeamLeaderboard(
+            teamId,
+            gameId,
+            { includeCoachCompetitors, includeDlc },
+          );
+          leaderboardData = leaderboardResponse.leaderboard;
+        }
         setGrid(gridData);
-        setLeaderboard(leaderboardData.leaderboard);
+        setLeaderboard(leaderboardData);
         setViewer(gridData.viewer);
         setTeamName(team.name);
       } catch (err) {
@@ -73,7 +82,7 @@ export default function TimesGrid() {
       }
     };
     load();
-  }, [teamId, gameId, includeCoachCompetitors, includeDlc]);
+  }, [teamId, gameId, includeCoachCompetitors, includeDlc, orgView]);
 
   useEffect(() => {
     if (teamId && gameId) {
@@ -82,8 +91,9 @@ export default function TimesGrid() {
   }, [teamId, gameId]);
 
   const trackLabel = activityLabel(grid?.game, true);
-  const showTeamSwitcher = teamsWithGame.length > 1;
+  const showTeamSwitcher = teamsWithGame.length > 1 && !orgView;
   const showGridToggles = viewer?.can_toggle_dlc || viewer?.can_toggle_coach_competitors;
+  const showOrgViewToggle = viewer?.can_toggle_org_view;
 
   const handleTeamChange = (nextTeamId) => {
     if (String(nextTeamId) !== String(teamId)) {
@@ -120,6 +130,23 @@ export default function TimesGrid() {
     >
       {error && <Alert variant="danger">{error}</Alert>}
 
+      {showOrgViewToggle && (
+        <div className="grid-org-view-switcher esports-panel mb-3">
+          <Form.Check
+            type="switch"
+            id="org-wide-grid"
+            className="times-grid-toggle mb-0"
+            label={`Show all teams in ${grid?.organization?.name || 'organization'}`}
+            checked={orgView}
+            onChange={(e) => setOrgView(e.target.checked)}
+          />
+          <p className="grid-org-view-note mb-0">
+            Coaches only. Compare every competing player across org teams running this game.
+            Par colors use each player&apos;s team benchmarks.
+          </p>
+        </div>
+      )}
+
       {showTeamSwitcher && (
         <div className="grid-team-switcher esports-panel mb-3">
           <Form.Group className="mb-0">
@@ -144,6 +171,7 @@ export default function TimesGrid() {
         <div className="dashboard-loading">Loading grid...</div>
       ) : grid ? (
         <>
+          {!orgView && (
           <section className="esports-panel times-grid-accordion mb-3">
             <button
               type="button"
@@ -165,11 +193,14 @@ export default function TimesGrid() {
               </div>
             )}
           </section>
+          )}
 
           <section className="esports-panel times-grid-main-panel">
             <div className="times-grid-section-head">
               <div className="times-grid-section-head-row">
-                <h2 className="dashboard-panel-title mb-0">{trackLabel} times</h2>
+                <h2 className="dashboard-panel-title mb-0">
+                  {orgView ? `All org ${trackLabel.toLowerCase()} times` : `${trackLabel} times`}
+                </h2>
                 {showGridToggles && (
                   <div className="times-grid-section-toggles">
                     {viewer?.can_toggle_dlc && (
@@ -196,8 +227,9 @@ export default function TimesGrid() {
                 )}
               </div>
               <p className="dashboard-panel-meta mb-0">
-                DLC tracks show by default. Turn off the toggle to hide Booster Course Pass cups.
-                Only competing team members are shown unless coach times are enabled.
+                {orgView
+                  ? 'Each column shows the player and their team. Cell colors use that team’s Par targets.'
+                  : 'DLC tracks show by default. Turn off the toggle to hide Booster Course Pass cups. Only competing team members are shown unless coach times are enabled.'}
               </p>
             </div>
 

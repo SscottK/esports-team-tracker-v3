@@ -9,8 +9,11 @@ from django.contrib.auth import get_user_model
 from games.models import Game
 from performances.models import MemberResult, MemberResultHistory, TeamBenchmark
 from performances.permissions import (
+    get_team_org_id,
     get_user_team_membership,
+    org_teams_with_game_count,
     user_can_submit_times,
+    user_can_view_org_grid,
     user_has_team_access,
     user_is_team_coach,
 )
@@ -19,7 +22,12 @@ from performances.serializers import (
     MemberResultSerializer,
     TeamBenchmarkSerializer,
 )
-from performances.services.grid import build_compare_data, build_leaderboard, build_team_grid
+from performances.services.grid import (
+    build_compare_data,
+    build_leaderboard,
+    build_org_grid,
+    build_team_grid,
+)
 from performances.services.csv_upload import TimesCsvImportError, import_team_times_csv
 from games.models import Level
 from teams.models import CoachRole, Team, TeamMembership
@@ -37,12 +45,19 @@ def _parse_include_dlc(request):
     return value in ('1', 'true', 'yes')
 
 
+def _parse_org_view(request):
+    value = request.query_params.get('org_view', 'false').lower()
+    return value in ('1', 'true', 'yes')
+
+
 def _game_has_dlc_tracks(game):
     return Level.objects.filter(game=game, is_active=True, is_dlc=True).exists()
 
 
 def _grid_viewer_payload(request, team_id, game):
     membership = get_user_team_membership(request.user, team_id)
+    org_id = get_team_org_id(team_id)
+    can_view_org_grid = user_can_view_org_grid(request.user, team_id, game.id)
     return {
         'is_coach': bool(membership and membership.is_coach),
         'is_member': bool(membership),
@@ -59,6 +74,11 @@ def _grid_viewer_payload(request, team_id, game):
             ).exists()
         ),
         'can_toggle_dlc': _game_has_dlc_tracks(game),
+        'can_toggle_org_view': bool(
+            can_view_org_grid
+            and org_id
+            and org_teams_with_game_count(org_id, game.id) >= 2
+        ),
     }
 
 
@@ -179,15 +199,32 @@ class TeamGridView(APIView):
         game = Game.objects.get(pk=game_id)
         include_coach_competitors = _parse_include_coach_competitors(request)
         include_dlc = _parse_include_dlc(request)
-        try:
-            payload = build_team_grid(
-                team,
-                game,
-                include_coach_competitors=include_coach_competitors,
-                include_dlc=include_dlc,
-            )
-        except ValueError as exc:
-            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        org_view = _parse_org_view(request)
+        if org_view:
+            if not user_can_view_org_grid(request.user, team_id, game_id):
+                return Response(
+                    {'detail': 'Only coaches can view the organization-wide grid.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            try:
+                payload = build_org_grid(
+                    team.organization,
+                    game,
+                    include_coach_competitors=include_coach_competitors,
+                    include_dlc=include_dlc,
+                )
+            except ValueError as exc:
+                return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                payload = build_team_grid(
+                    team,
+                    game,
+                    include_coach_competitors=include_coach_competitors,
+                    include_dlc=include_dlc,
+                )
+            except ValueError as exc:
+                return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         payload['viewer'] = _grid_viewer_payload(request, team_id, game)
         return Response(payload)
 
